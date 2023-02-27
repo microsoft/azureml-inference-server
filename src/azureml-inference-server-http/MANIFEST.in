@@ -1,0 +1,5 @@
+include LICENSE.txt
+recursive-include azureml_inference_server_http *
+prune **/__pycache__
+prune azureml_inference_server_http/prepost_server/tests
+global-exclude *.py[co]

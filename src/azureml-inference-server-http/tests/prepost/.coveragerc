@@ -1,0 +1,14 @@
+# .coveragerc to control coverage.py
+[run]
+# Includes branch coverage
+branch = True
+
+# Sets the root directory from which coverage will be tracked. Set to this directory
+source = ../../azureml_inference_server_http/prepost_server/
+
+omit =
+        *tests*
+        *prototypes*
+# Note, this does not mean that tests will run in parallel, it just dictates that multiple .coverage xmls will be generated 
+# from multiple runs that can later be combined
+parallel= True

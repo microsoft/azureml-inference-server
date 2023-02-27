@@ -1,0 +1,8 @@
+{
+    "version": 1,
+    "loggers": {
+        "azmlinfsrv": {
+            "propagate": true
+        }
+    }
+}

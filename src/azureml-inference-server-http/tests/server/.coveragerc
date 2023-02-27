@@ -1,0 +1,36 @@
+# .coveragerc to control coverage.py
+[run]
+# Includes branch coverage
+branch = True
+
+# Sets the root directory from which coverage will be tracked. Set to highest route in repo.
+source = azureml_inference_server_http.server
+
+omit = *tests*
+
+#Note, this does not mean that tests will run in parallel, it just dictates that multiple .coverage xmls will be generated 
+# from multiple runs that can later be combined
+parallel= True
+
+[report]
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover
+
+    # Don't complain about missing debug-only code:
+    def __repr__
+    if self\.debug
+
+    # Don't complain if tests don't hit defensive assertion code:
+    raise AssertionError
+    raise NotImplementedError
+
+    # Don't complain if non-runnable code isn't run:
+    if 0:
+    if __name__ == .__main__.:
+
+ignore_errors = True
+
+[html]
+directory = coverage_html_report

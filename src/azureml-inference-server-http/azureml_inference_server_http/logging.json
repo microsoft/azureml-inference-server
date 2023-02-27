@@ -1,0 +1,53 @@
+{
+    "version": 1,
+    "handlers": {
+        "azmlinfsrv": {
+            "class": "logging.StreamHandler",
+            "level": "INFO",
+            "stream": "ext://sys.stdout",
+            "formatter": "azmlinfsrv"
+        },
+        "azmlinfsrv_stderr": {
+            "class": "logging.StreamHandler",
+            "level": "INFO",
+            "stream": "ext://sys.stderr",
+            "formatter": "azmlinfsrv"
+        }
+    },
+    "formatters": {
+        "azmlinfsrv": {
+            "class": "azureml_inference_server_http.log_config.AMLLogFormatter",
+            "format": "%(asctime)s %(levelname).1s [%(process)d] %(name)s - %(message)s",
+            "style": "%"
+        }
+    },
+    "loggers": {
+        "azmlinfsrv": {
+            "level": "INFO",
+            "handlers": [
+                "azmlinfsrv"
+            ],
+            "propagate": false
+        },
+        "gunicorn.access": {
+            "level": "INFO",
+            "handlers": [
+                "azmlinfsrv"
+            ],
+            "filters": [
+                "RootAccessFilter"
+            ]
+        },
+        "gunicorn.error": {
+            "level": "INFO",
+            "handlers": [
+                "azmlinfsrv_stderr"
+            ]
+        }
+    },
+    "filters": {
+        "RootAccessFilter": {
+            "()": "azureml_inference_server_http.log_config.RootAccessFilter"
+        }
+    }
+}

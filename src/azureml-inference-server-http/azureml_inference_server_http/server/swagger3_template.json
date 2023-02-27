@@ -1,0 +1,166 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "$SERVICE_NAME$",
+    "description": "API specification for the Azure Machine Learning service $SERVICE_NAME$",
+    "version": "$SERVICE_VERSION$"
+  },
+  "security": [
+    {
+      "Bearer": []
+    }
+  ],
+  "paths": {
+    "$PATH_PREFIX$/": {
+      "get": {
+        "operationId": "ServiceHealthCheck",
+        "description": "Simple health check endpoint to ensure the service is up at any given point.",
+        "responses": {
+          "200": {
+            "description": "If service is up and running, this response will be returned with the content 'Healthy'",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Healthy"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The service failed to execute due to an error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "$PATH_PREFIX$/score": {
+      "post": {
+        "operationId": "RunMLService",
+        "description": "Run web service's model and get the prediction output",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "description": "The input payload for executing the real-time machine learning service.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The service processed the input correctly and provided a result prediction, if applicable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceOutput"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The service failed to execute due to an error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "$PATH_PREFIX$/swagger.json": {
+      "get": {
+        "operationId": "GetSwaggerSpec",
+        "description": "Get the Swagger specification.",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                2,
+                3
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The Swagger specification.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The service failed to execute due to an error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ServiceInput": {
+        "type": "object",
+        "properties": {
+          "param": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "ServiceOutput": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "object"
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header",
+        "description": "For example: Bearer abc123"
+      }
+    }
+  }
+}
