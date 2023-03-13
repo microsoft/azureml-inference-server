@@ -287,6 +287,17 @@ class TestSuite:
                 },
             },
             {
+                "path": "appinsights/test_appinsights_recorder.py",
+                "entry_script": "entry_scripts/default_main.py",
+                "env_vars": {
+                    "AML_APP_INSIGHTS_KEY": str(uuid.uuid4()),
+                },
+            },
+            {
+                "path": "appinsights/test_appinsights_recorder_exception.py",
+                "entry_script": "entry_scripts/default_main.py",
+            },
+            {
                 "path": "test_entry_debugpy.py",
                 "entry_script": "entry_scripts/default_main.py",
             },
