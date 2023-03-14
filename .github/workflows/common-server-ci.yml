@@ -12,12 +12,13 @@ defaults:
     working-directory: src/azureml-inference-server-http/
 
 jobs:
-  Server Tests:
+  Server-Tests:
     strategy:
       matrix:
         python_version: ['3.7', '3.8', '3.9', '3.10']
         pool_vmImage: ['ubuntu-latest', 'windows-latest']
     runs-on: ${{matrix.pool_vmImage}}
+    environment: dev
     steps:
       - name: Clone branch
         uses: actions/checkout@v3
