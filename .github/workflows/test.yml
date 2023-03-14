@@ -1,0 +1,36 @@
+name: test
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+  working-directory: src/azureml-inference-server-http/
+
+jobs:
+  job:
+    strategy:
+      matrix:
+        python_version: ['3.7', '3.8', '3.9']
+        pool_vmImage: ['ubuntu-latest', 'ubuntu-latest', 'windows-latest']
+    runs-on: ${{matrix.pool_vmImage}}
+
+    steps:
+    
+      - name: Clone branch
+        uses: actions/checkout@v3
+
+      # Specify the python version
+      - name: UsePythonVersion@0
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{matrix.python_version}}
+
+      - name: Install azureml_inference_server_http
+      - run: |
+            cd src/azureml-inference-server-http/
+            pip install -e .[dev]
