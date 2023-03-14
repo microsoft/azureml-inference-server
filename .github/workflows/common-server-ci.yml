@@ -1,4 +1,4 @@
-name: test
+name: Common-Server-CI
 
 on:
   pull_request:
@@ -12,7 +12,7 @@ defaults:
     working-directory: src/azureml-inference-server-http/
 
 jobs:
-  Common-Server-CI:
+  Server Tests:
     strategy:
       matrix:
         python_version: ['3.7', '3.8', '3.9', '3.10']
@@ -36,13 +36,19 @@ jobs:
         run: |
             set -e
             pip install pytest-azurepipelines
+            AML_LOG_ANALYTICS_WORKSPACE_ID=${{secrets.AML_LOG_ANALYTICS_WORKSPACE_ID}} \
+            AML_APP_INSIGHTS_KEY=${{secrets.AML_APP_INSIGHTS_KEY}} \
             coverage run --rcfile tests/server/.coveragerc -m \
             pytest \
+              --online \
+              --test-run-title "$(Agent.JobName)" \
               --no-coverage-upload
             coverage combine . tests/server
             # Ignore errors because it won't be able to find the `main.py` that was temporary placed into the package.
             coverage report --ignore-errors --show-missing
             coverage xml --ignore-errors
+
+    # - name: Publish code coverage results (TBD)
 
   # Run Lint check for the source code
   Flake8:
