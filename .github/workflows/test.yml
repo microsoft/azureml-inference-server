@@ -12,11 +12,11 @@ defaults:
     working-directory: src/azureml-inference-server-http/
 
 jobs:
-  job:
+  Common-Server-CI:
     strategy:
       matrix:
-        python_version: ['3.7', '3.8', '3.9']
-        pool_vmImage: ['ubuntu-latest', 'ubuntu-latest', 'windows-latest']
+        python_version: ['3.7', '3.8', '3.9', '3.10']
+        pool_vmImage: ['ubuntu-latest', 'windows-latest']
     runs-on: ${{matrix.pool_vmImage}}
 
     steps:
@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v3
 
       # Specify the python version
-      - name: UsePythonVersion@0
+      - name: Set Python Version
         uses: actions/setup-python@v4
         with:
           python-version: ${{matrix.python_version}}
@@ -33,3 +33,15 @@ jobs:
       - name: Install azureml_inference_server_http
         run: |
             pip install -e .[dev]
+      
+      - name: Run Tests
+        run: |
+            set -e
+            pip install pytest-azurepipelines
+            coverage run --rcfile tests/server/.coveragerc -m \
+            pytest \
+              --no-coverage-upload
+            coverage combine . tests/server
+            # Ignore errors because it won't be able to find the `main.py` that was temporary placed into the package.
+            coverage report --ignore-errors --show-missing
+            coverage xml --ignore-errors
