@@ -9,7 +9,7 @@ on:
 defaults:
   run:
     shell: bash
-  working-directory: src/azureml-inference-server-http/
+    working-directory: src/azureml-inference-server-http/
 
 jobs:
   job:
