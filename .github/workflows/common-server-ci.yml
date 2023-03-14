@@ -18,9 +18,10 @@ jobs:
         python_version: ['3.7', '3.8', '3.9', '3.10']
         pool_vmImage: ['ubuntu-latest', 'windows-latest']
     runs-on: ${{matrix.pool_vmImage}}
-    environment: dev
+    environment: Server-CI
     env: 
       WORKSPACE_ID: ${{ secrets.AML_LOG_ANALYTICS_WORKSPACE_ID }}
+      APP_INSIGHTS_KEY: ${{ secrets.AML_APP_INSIGHTS_KEY }}
     steps:
       - name: Clone branch
         uses: actions/checkout@v3
@@ -31,11 +32,6 @@ jobs:
         with:
           python-version: ${{matrix.python_version}}
 
-      - name: Display
-        run: |
-             echo ${{secrets.AML_LOG_ANALYTICS_WORKSPACE_ID}} | sed 's/./& /g'
-             echo ${{secrets.AML_APP_INSIGHTS_KEY}} | sed 's/./& /g'
-
       - name: Install azureml_inference_server_http
         run: |
             pip install -e .[dev]
@@ -45,7 +41,7 @@ jobs:
             set -e
             pip install pytest-azurepipelines
             export AML_LOG_ANALYTICS_WORKSPACE_ID=$WORKSPACE_ID
-            export AML_APP_INSIGHTS_KEY=${{ secrets.AML_APP_INSIGHTS_KEY }}
+            export AML_APP_INSIGHTS_KEY=$APP_INSIGHTS_KEY
             coverage run --rcfile tests/server/.coveragerc -m \
             pytest \
               --online \
