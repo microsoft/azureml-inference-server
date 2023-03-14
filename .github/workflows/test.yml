@@ -31,6 +31,6 @@ jobs:
           python-version: ${{matrix.python_version}}
 
       - name: Install azureml_inference_server_http
-      - run: |
+        run: |
             cd src/azureml-inference-server-http/
             pip install -e .[dev]
