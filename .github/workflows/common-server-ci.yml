@@ -19,6 +19,8 @@ jobs:
         pool_vmImage: ['ubuntu-latest', 'windows-latest']
     runs-on: ${{matrix.pool_vmImage}}
     environment: dev
+    env: 
+      WORKSPACE_ID: ${{ secrets.AML_LOG_ANALYTICS_WORKSPACE_ID }}
     steps:
       - name: Clone branch
         uses: actions/checkout@v3
@@ -37,8 +39,8 @@ jobs:
         run: |
             set -e
             pip install pytest-azurepipelines
-            AML_LOG_ANALYTICS_WORKSPACE_ID=${{secrets.AML_LOG_ANALYTICS_WORKSPACE_ID}} \
-            AML_APP_INSIGHTS_KEY=${{secrets.AML_APP_INSIGHTS_KEY}} \
+            AML_LOG_ANALYTICS_WORKSPACE_ID=$WORKSPACE_ID \
+            AML_APP_INSIGHTS_KEY=${{ secrets.AML_APP_INSIGHTS_KEY }} \
             coverage run --rcfile tests/server/.coveragerc -m \
             pytest \
               --online \
