@@ -32,5 +32,4 @@ jobs:
 
       - name: Install azureml_inference_server_http
         run: |
-            cd src/azureml-inference-server-http/
             pip install -e .[dev]
