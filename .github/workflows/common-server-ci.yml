@@ -32,6 +32,13 @@ jobs:
         with:
           python-version: ${{matrix.python_version}}
 
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Install azureml_inference_server_http
         run: |
             pip install -e .[dev]
@@ -45,7 +52,6 @@ jobs:
             coverage run --rcfile tests/server/.coveragerc -m \
             pytest \
               --online \
-              --test-run-title "$(Agent.JobName)" \
               --no-coverage-upload
             coverage combine . tests/server
             # Ignore errors because it won't be able to find the `main.py` that was temporary placed into the package.
