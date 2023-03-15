@@ -67,7 +67,7 @@ jobs:
       - name: Code Coverage Summary Report
         uses: irongut/CodeCoverageSummary@v1.0.2
         with:
-          filename: coverage.xml
+          filename: /home/runner/work/azureml-inference-server/azureml-inference-server/src/azureml-inference-server-http/coverage.xml
           badge: true
           format: markdown
           output: both
