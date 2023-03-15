@@ -63,6 +63,7 @@ jobs:
             # Ignore errors because it won't be able to find the `main.py` that was temporary placed into the package.
             coverage report --ignore-errors --show-missing
             coverage xml --ignore-errors
+            mkdir coverage
             cp coverage.xml coverage/coverage.xml
 
       - name: Code Coverage Summary Report
