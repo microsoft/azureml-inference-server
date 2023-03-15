@@ -12,7 +12,7 @@ defaults:
     working-directory: src/azureml-inference-server-http/
 
 jobs:
-  Server-Tests:
+  azureml-inference-http-server-Linux-CI:
     strategy:
       matrix:
         python_version: ['3.7', '3.8', '3.9']
