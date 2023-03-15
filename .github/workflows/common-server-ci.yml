@@ -63,11 +63,12 @@ jobs:
             # Ignore errors because it won't be able to find the `main.py` that was temporary placed into the package.
             coverage report --ignore-errors --show-missing
             coverage xml --ignore-errors
+            cp coverage.xml coverage/coverage.xml
 
       - name: Code Coverage Summary Report
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
-          filename: coverage.xml
+          filename: coverage/coverage.xml
           badge: true
           format: markdown
           output: both
