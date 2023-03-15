@@ -50,4 +50,4 @@ jobs:
         if: always()
         with:
           files: |
-            tests/azmlinfsrv/out/TEST-*.xml
+            out/TEST-*.xml
