@@ -1,0 +1,46 @@
+name: azureml-inference-http-server Linux CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+    working-directory: src/azureml-inference-server-http/
+
+jobs:
+  Server-Tests:
+    strategy:
+      matrix:
+        python_version: ['3.7', '3.8', '3.9']
+    runs-on: ${{matrix.pool_vmImage}}
+    environment: Server-CI
+
+    steps:
+      - name: Clone branch
+        uses: actions/checkout@v3
+
+      # Specify the python version
+      - name: Set Python version
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{matrix.python_version}}
+      
+      - name: Install azureml_inference_server_http
+        run: |
+            export PYTHON_VERSION=`python -c 'import sys; version=sys.version_info[:3]; print("{0}.{1}".format(*version))'`   
+            pip install wheel
+            python setup.py sdist bdist_wheel
+            cd dist
+            for entry in "./"/*.whl
+            do
+              python -m pip install "$entry"[dev]
+            done
+
+      - name: Run E2E Tests
+        run: |
+            cd tests/azmlinfsrv
+            sudo env "PATH=$PATH" python -m pytest --junitxml=out/TEST-component-results.xml --test_run_name=test
