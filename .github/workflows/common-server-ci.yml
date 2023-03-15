@@ -64,13 +64,13 @@ jobs:
             coverage report --ignore-errors --show-missing
             coverage xml --ignore-errors
 
-     - name: Code Coverage Summary Report
-       uses: irongut/CodeCoverageSummary@v1.0.2
-       with:
-        filename: coverage.xml
-        badge: true
-        format: markdown
-        output: both
+      - name: Code Coverage Summary Report
+        uses: irongut/CodeCoverageSummary@v1.0.2
+        with:
+          filename: coverage.xml
+          badge: true
+          format: markdown
+          output: both
 
   # Run Lint check for the source code
   Flake8:
