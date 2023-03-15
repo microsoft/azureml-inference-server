@@ -50,4 +50,4 @@ jobs:
         if: always()
         with:
           files: |
-            out/TEST-*.xml
+            /home/runner/work/azureml-inference-server/azureml-inference-server/src/azureml-inference-server-http/tests/azmlinfsrv/out/TEST-component-results.xml
