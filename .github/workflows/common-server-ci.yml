@@ -1,0 +1,98 @@
+name: Common-Server-CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  # Required to clone repo
+  contents: read
+  # Required for OIDC login to Azure
+  id-token: write
+
+defaults:
+  run:
+    shell: bash
+    working-directory: src/azureml-inference-server-http/
+
+jobs:
+  Server-Tests:
+    strategy:
+      matrix:
+        python_version: ['3.7', '3.8', '3.9', '3.10']
+        pool_vmImage: ['ubuntu-latest', 'windows-latest']
+    runs-on: ${{matrix.pool_vmImage}}
+    environment: Server-CI
+    env: 
+      WORKSPACE_ID: ${{ secrets.AML_LOG_ANALYTICS_WORKSPACE_ID }}
+      APP_INSIGHTS_KEY: ${{ secrets.AML_APP_INSIGHTS_KEY }}
+    steps:
+      - name: Clone branch
+        uses: actions/checkout@v3
+
+      # Specify the python version
+      - name: Set Python version
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{matrix.python_version}}
+
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Install azureml_inference_server_http
+        run: |
+            pip install -e .[dev]
+      
+      - name: Run Tests
+        run: |
+            set -e
+            pip install pytest-azurepipelines
+            export AML_LOG_ANALYTICS_WORKSPACE_ID=$WORKSPACE_ID
+            export AML_APP_INSIGHTS_KEY=$APP_INSIGHTS_KEY
+            coverage run --rcfile tests/server/.coveragerc -m \
+            pytest \
+              --online \
+              --no-coverage-upload
+            coverage combine . tests/server
+            # Ignore errors because it won't be able to find the `main.py` that was temporary placed into the package.
+            coverage report --ignore-errors --show-missing
+            coverage xml --ignore-errors
+
+      - name: Code Coverage Summary
+        uses: orgoro/coverage@v3
+        with:
+          coverageFile: /home/runner/work/azureml-inference-server/azureml-inference-server/src/azureml-inference-server-http/coverage.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+        if: runner.os == 'Linux'
+
+  # Run Lint check for the source code
+  Flake8:
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Clone branch
+        uses: actions/checkout@v3
+
+      - name: Install flake8
+        run: pip install flake8
+
+      - name: Lint check
+        run: flake8 .
+  
+  # Run Black check for the source code
+  Black:
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Clone branch
+        uses: actions/checkout@v3
+
+      - name: Install black
+        run: pip install black
+
+      - name: Black check
+        run: black --check .
