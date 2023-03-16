@@ -67,7 +67,7 @@ jobs:
       - name: Code Coverage Summary
         uses: orgoro/coverage@v3
         with:
-          coverageFile: /home/runner/work/azureml-inference-server/azureml-inference-server/src/azureml-inference-server-http/coverage.xml
+          coverageFile: coverage.xml
           token: ${{ secrets.GITHUB_TOKEN }}
 
   # Run Lint check for the source code
