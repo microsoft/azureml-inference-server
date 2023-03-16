@@ -68,7 +68,7 @@ jobs:
         with:
           coverageFile: /home/runner/work/azureml-inference-server/azureml-inference-server/src/azureml-inference-server-http/coverage.xml
           token: ${{ secrets.GITHUB_TOKEN }}
-        if: ${{matrix.pool_vmImage}} != 'windows-latest'
+        if: runner.os == 'Linux'
 
   # Run Lint check for the source code
   Flake8:
