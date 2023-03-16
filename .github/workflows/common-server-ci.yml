@@ -68,6 +68,7 @@ jobs:
         uses: orgoro/coverage@v3
         with:
           coverageFile: coverage.xml
+          token: ${{ secrets.COVERAGE_TOKEN }}
 
   # Run Lint check for the source code
   Flake8:
