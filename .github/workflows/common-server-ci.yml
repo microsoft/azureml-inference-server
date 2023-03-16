@@ -69,6 +69,7 @@ jobs:
         with:
           coverageFile: coverage.xml
           token: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{matrix.pool_vmImage}} != 'windows-latest'
 
   # Run Lint check for the source code
   Flake8:
