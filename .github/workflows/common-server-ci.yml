@@ -68,7 +68,7 @@ jobs:
         uses: orgoro/coverage@v3
         with:
           coverageFile: /home/runner/work/azureml-inference-server/azureml-inference-server/src/azureml-inference-server-http/coverage.xml
-          token: ${{ secrets.COVERAGE_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   # Run Lint check for the source code
   Flake8:
