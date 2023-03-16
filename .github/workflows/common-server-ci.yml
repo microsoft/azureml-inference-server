@@ -57,7 +57,6 @@ jobs:
             export AML_APP_INSIGHTS_KEY=$APP_INSIGHTS_KEY
             coverage run --rcfile tests/server/.coveragerc -m \
             pytest \
-              --online \
               --no-coverage-upload
             coverage combine . tests/server
             # Ignore errors because it won't be able to find the `main.py` that was temporary placed into the package.
