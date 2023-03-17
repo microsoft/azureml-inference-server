@@ -54,8 +54,8 @@ jobs:
       - name: SBOM Generation
         uses: anchore/sbom-action@v0
         with:
-          path: .
-          output-file: /dist/
+          path: dist/
+          output-file: dist/
       - name: Test Dir
         run: |
           ls -al dist/
