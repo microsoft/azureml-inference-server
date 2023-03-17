@@ -54,8 +54,8 @@ jobs:
       - name: SBOM Generation
         uses: anchore/sbom-action@v0
         with:
-          path: dist/
-          output-file: dist/
+          path: src/azureml-inference-server-http/dist
+          output-file: src/azureml-inference-server-http/dist
       - name: Test Dir
         run: |
           ls -al dist/
