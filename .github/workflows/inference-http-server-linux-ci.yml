@@ -51,11 +51,11 @@ jobs:
             /home/runner/work/azureml-inference-server/azureml-inference-server/src/azureml-inference-server-http/tests/azmlinfsrv/out/TEST-component-results.xml
           comment_title: Test results for python version ${{matrix.python_version}}
           check_name: Python ${{matrix.python_version}}
-        - name: SBOM Generation
-          uses: anchore/sbom-action@v0
-            with:
-              path: .
-              output-file: /dist/
-        - name: Test Dir
-          run: |
-            ls -al dist/
+      - name: SBOM Generation
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          output-file: /dist/
+      - name: Test Dir
+        run: |
+          ls -al dist/
