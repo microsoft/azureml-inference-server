@@ -52,3 +52,12 @@ jobs:
             /home/runner/work/azureml-inference-server/azureml-inference-server/src/azureml-inference-server-http/tests/azmlinfsrv/out/TEST-component-results.xml
           comment_title: Test results for python version ${{matrix.python_version}}
           check_name: ${{matrix.pool_vmImage}} Python ${{matrix.python_version}}
+      
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        if: runner.os == 'Windows' && always()
+        with:
+          files: |
+            /home/runner/work/azureml-inference-server/azureml-inference-server/src/azureml-inference-server-http/tests/azmlinfsrv/out/TEST-component-results.xml
+          comment_title: Test results for python version ${{matrix.python_version}}
+          check_name: ${{matrix.pool_vmImage}} Python ${{matrix.python_version}}
