@@ -37,7 +37,7 @@ jobs:
       - name: Run E2E Tests
         run: |
             cd tests/azmlinfsrv
-            sudo env "PATH=$PATH" python -m pytest --junitxml=out/TEST-component-results.xml --test_run_name=test
+            pytest --junitxml=out/TEST-component-results.xml --test_run_name=test
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
