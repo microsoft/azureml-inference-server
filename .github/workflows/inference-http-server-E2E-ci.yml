@@ -38,7 +38,7 @@ jobs:
         run: |
             cd tests/azmlinfsrv
             if [ "$RUNNER_OS" == "Linux" ]; then
-              sudo pytest --junitxml=out/TEST-component-results.xml --test_run_name=test
+              sudo env "PATH=$PATH" python -m pytest --junitxml=out/TEST-component-results.xml --test_run_name=test
             else
               pytest --junitxml=out/TEST-component-results.xml --test_run_name=test
             fi
