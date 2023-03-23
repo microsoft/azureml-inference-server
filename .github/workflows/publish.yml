@@ -34,7 +34,7 @@ jobs:
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     - name: Test keyvault
       run: |
-        az keyvault secret show --vault-name "azureml-sdk-secrets" --name "azureml-pypi-test" --query "value" --subscription 212a7897-c862-416e-8391-a2dd18f17948
+        az keyvault secret show --vault-name "azureml-sdk-secrets" --name "azureml-pypi-test" --query "value"
     # - name: Build wheels
     #   run: |  
     #     pip install wheel
