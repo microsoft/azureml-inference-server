@@ -1,0 +1,62 @@
+name: Publish to PyPI
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  # Required to clone repo
+  contents: read
+  # Required for OIDC login to Azure
+  id-token: write    
+
+defaults:
+  run:
+    shell: bash
+    working-directory: src/azureml-inference-server-http/
+
+jobs:
+  deploy-to-PyPI:
+    runs-on: ubuntu-latest
+    environment: Server-CI
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    - name: Log in to Azure
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    - name: Test kayvault
+        run: |
+          az keyvault secret show --vault-name "azureml-sdk-secrets" --name "azureml-pypi-test" --query "value" --subscription "212a7897-c862-416e-8391-a2dd18f17948"
+    # - name: Build wheels
+    #   run: |  
+    #     pip install wheel
+    #     python setup.py sdist bdist_wheel
+    # - name: Install twine
+    #   run: |
+    #     pip install twine
+    # # The step below publishes to testpypi in order to catch any issues
+    # # with the package configuration that would cause a failure to upload
+    # # to pypi. One example of such a failure is if a classifier is
+    # # rejected by pypi (e.g "3 - Beta"). This would cause a failure during the
+    # # middle of the package upload causing the action to fail, and certain packages
+    # # might have already been updated, this would be bad.
+    # - name: Publish to TestPyPI
+    #   env:
+    #     TWINE_USERNAME: '__token__'
+    #     TWINE_PASSWORD: ${{ secrets.TEST_PYPI_AUTOMATIC_RELEASE_TOKEN }}
+    #   run: |
+    #     twine upload --repository testpypi --skip-existing --verbose dist/*
+    # - name: Publish to PyPI
+    #   env:
+    #     TWINE_USERNAME: '__token__'
+    #     TWINE_PASSWORD: ${{ secrets.PYPI_AUTOMATIC_RELEASE_TOKEN }}
+    #   run: |
+    #     twine upload --skip-existing --verbose dist/*
