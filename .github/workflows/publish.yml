@@ -1,10 +1,8 @@
 name: Publish to PyPI
 
 on:
-  pull_request:
-    branches:
-      - main
-  workflow_dispatch:   
+  release:
+    types: [published]  
 
 defaults:
   run:
@@ -18,17 +16,21 @@ jobs:
     steps:
     - name: Clone the repository
       uses: actions/checkout@v3
+
     - name: Setup python version
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
+
     - name: Build wheels
       run: |  
         pip install wheel
         python setup.py sdist bdist_wheel
+
     - name: Install twine
       run: |
         pip install twine
+
     # The step below publishes to testpypi in order to catch any issues
     # with the package configuration that would cause a failure to upload
     # to pypi. One example of such a failure is if a classifier is
@@ -41,9 +43,10 @@ jobs:
         TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
       run: |
         twine upload --repository testpypi --skip-existing --verbose dist/*
-    # - name: Publish to PyPI
-    #   env:
-    #     TWINE_USERNAME: '__token__'
-    #     TWINE_PASSWORD: ${{ secrets.PYPI_AUTOMATIC_RELEASE_TOKEN }}
-    #   run: |
-    #     twine upload --skip-existing --verbose dist/*
+
+    - name: Publish to PyPI
+      env:
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: |
+        twine upload --skip-existing --verbose dist/*
