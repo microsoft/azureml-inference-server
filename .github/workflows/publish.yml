@@ -35,6 +35,7 @@ jobs:
     - name: Test keyvault
       run: |
         az keyvault secret show --vault-name "azureml-sdk-secrets" --name "azureml-pypi-test" --query "value"
+        az keyvault secret show --vault-name "azureml-sdk-secrets" --name "azureml-pypi" --query "value"
     # - name: Build wheels
     #   run: |  
     #     pip install wheel
