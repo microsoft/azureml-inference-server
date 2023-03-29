@@ -108,11 +108,27 @@ class AMLInferenceServerConfig(pydantic.BaseSettings):
     # Start the inference server in DEBUGGING mode
     debug_port: Optional[int] = pydantic.Field(default=None, env="AZUREML_DEBUG_PORT", alias="AZUREML_DEBUG_PORT")
 
+    # Check if extra keys are there in the config file
+    @pydantic.root_validator(pre=True)
+    def check_extra_keys(cls, values: Dict[str, Any]):
+        supported_keys = {field.alias for field in cls.__fields__.values()}
+        extra_keys = []
+        for field_name in list(values):
+            if field_name not in supported_keys:
+                extra_keys.append(field_name)
+        if extra_keys:
+            logger.warning(
+                f"Found extra keys in the config file that are not supported by the server.\nExtra keys = {extra_keys}"
+            )
+        return values
+
     class Config:
         # For fields that do not have a value for "env", the environment variable name is built by concatenating this
         # value with the field name. As an example, the field `app_insights_key` will read its value from the
         # environment variable `AML_APP_INSIGHTS_KEY`.
         env_prefix = "AML_"
+        # Allow other keys in the config.json file
+        extra = pydantic.Extra.allow
 
         @classmethod
         def customise_sources(cls, init_settings, env_settings, file_secret_settings):

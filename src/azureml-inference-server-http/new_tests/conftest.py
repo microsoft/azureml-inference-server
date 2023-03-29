@@ -1,9 +1,11 @@
 import functools
 import logging
 import os
+import uuid
 
 import flask
 import flask.testing
+import pydantic
 import pytest
 
 # Set a user script for the initial load. We need to set the environment variable before creating
@@ -46,6 +48,14 @@ def client(app: TestingApp) -> TestingClient:
 @pytest.fixture()
 def app_cors(config):
     config.cors_origins = "www.microsoft.com,  www.bing.com"
+    return create_app()
+
+
+@pytest.fixture()
+def app_appinsights(config):
+    config.app_insights_enabled = True
+    config.model_dc_storage_enabled = True
+    config.app_insights_key = pydantic.SecretStr(str(uuid.uuid4()))
     return create_app()
 
 

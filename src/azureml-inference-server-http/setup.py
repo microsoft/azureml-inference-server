@@ -76,7 +76,7 @@ setuptools.setup(
         'gunicorn==20.1.0; platform_system!="Windows"',
         "inference-schema~=1.5.0",
         "opencensus-ext-azure~=1.1.0",
-        'psutil==5.8.0; platform_system=="Windows"',
+        'psutil<6.0.0; platform_system=="Windows"',
         "pydantic>=1.9,<1.11",
         'waitress==2.1.2; platform_system=="Windows"',
     ],

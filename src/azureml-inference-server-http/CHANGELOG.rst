@@ -1,3 +1,36 @@
+0.8.3 (2023-03-23)
+~~~~~~~~~~~~~~~~~~
+
+Fixes
+-----
+
+- Fixed the issue related to compatibility with flask1.
+
+
+0.8.2 (2023-03-20)
+~~~~~~~~~~~~~~~~~~
+
+Enhancements
+------------
+
+- Warning message will be logged if there are extra keys in the config file which are not supported by the server.
+
+
+0.8.1 (2023-03-06)
+~~~~~~~~~~~~~~~~~~
+
+Features
+--------
+
+- Supports loading server config from a json file. 
+  Added support for a new env variable ``AZUREML_CONFIG_FILE``. Refer to README for detailed usage.
+
+Enhancements
+------------
+
+- Exception details will not be returned in the HTTP response. Check the server logs for details.
+
+
 0.8.0 (2022-12-15)
 ~~~~~~~~~~~~~~~~~~
 

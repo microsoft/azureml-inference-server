@@ -110,6 +110,13 @@ def _init_headers() -> None:
     legacy_client_request_id = request.headers.get("x-ms-request-id", "")
     client_request_id = request.headers.get("x-ms-client-request-id", "")
     if legacy_client_request_id:
+        # Warning message
+        logger.warning(
+            (
+                "x-ms-request-id header has been deprecated and will be removed from future versions of the server."
+                " Please use x-ms-client-request-id."
+            )
+        )
         # When `x-ms-request-id` is set and `x-ms-client-request-id` isn't. Use `x-ms-request-id` as the Client Request
         # ID.
         if not client_request_id:

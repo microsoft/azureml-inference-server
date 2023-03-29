@@ -246,58 +246,6 @@ class TestSuite:
         # cleanup: list of files to be deleted after the tests
         tests = [
             {
-                "path": "appinsights/test_appinsights.py",
-                "entry_script": "entry_scripts/default_main.py",
-                "env_vars": {
-                    "AML_APP_INSIGHTS_ENABLED": "true",
-                    "AML_APP_INSIGHTS_KEY": str(uuid.uuid4()),
-                    "AML_MODEL_DC_STORAGE_ENABLED": "true",
-                    "AZUREML_MODEL_DIR": str(ROOT / "azureml-models"),
-                },
-                "files_to_add": [(None, ROOT / "azureml-models/test-model/1/something.txt")],
-                "cleanup_folders": [ROOT / "azureml-models"],
-            },
-            {
-                "path": "appinsights/test_appinsights_response_payload.py",
-                "entry_script": "entry_scripts/default_main.py",
-                "env_vars": {
-                    "AML_APP_INSIGHTS_ENABLED": "true",
-                    "AML_APP_INSIGHTS_KEY": str(uuid.uuid4()),
-                    "APP_INSIGHTS_LOG_RESPONSE_ENABLED": "false",
-                },
-                "files_to_add": [(None, ROOT / "azureml-models/test-model/1/something.txt")],
-                "cleanup_folders": [ROOT / "azureml-models"],
-            },
-            {
-                "path": "appinsights/test_appinsights_response_binary.py",
-                "entry_script": "entry_scripts/binary_main.py",
-                "env_vars": {
-                    "AML_APP_INSIGHTS_ENABLED": "true",
-                    "AML_APP_INSIGHTS_KEY": str(uuid.uuid4()),
-                    "APP_INSIGHTS_LOG_RESPONSE_ENABLED": "true",
-                },
-            },
-            {
-                "path": "appinsights/test_appinsights_exception.py",
-                "entry_script": "entry_scripts/runtime_error_main.py",
-                "env_vars": {
-                    "AML_APP_INSIGHTS_ENABLED": "true",
-                    "AML_APP_INSIGHTS_KEY": str(uuid.uuid4()),
-                    "AML_MODEL_DC_STORAGE_ENABLED": "true",
-                },
-            },
-            {
-                "path": "appinsights/test_appinsights_recorder.py",
-                "entry_script": "entry_scripts/default_main.py",
-                "env_vars": {
-                    "AML_APP_INSIGHTS_KEY": str(uuid.uuid4()),
-                },
-            },
-            {
-                "path": "appinsights/test_appinsights_recorder_exception.py",
-                "entry_script": "entry_scripts/default_main.py",
-            },
-            {
                 "path": "test_entry_debugpy.py",
                 "entry_script": "entry_scripts/default_main.py",
             },

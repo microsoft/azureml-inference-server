@@ -1,13 +1,18 @@
+from datetime import timedelta
+import json
 import os
 import time
-
-from datetime import timedelta
-
-import pytest
-import pandas as pd
+from unittest.mock import Mock
+import uuid
 
 from azure.identity import DefaultAzureCredential
 from azure.monitor.query import LogsQueryClient, LogsQueryStatus
+import flask
+from opencensus.trace.blank_span import BlankSpan
+import pandas as pd
+import pytest
+
+from azureml_inference_server_http.api.aml_response import AMLResponse
 
 AML_LOG_ANALYTICS_WORKSPACE_ID = os.environ.get("AML_LOG_ANALYTICS_WORKSPACE_ID", None)
 
@@ -80,3 +85,183 @@ def test_appinsights_e2e(config, app):
 
     # This can only be reached if we failed out of the 5 minute timeout
     pytest.fail("Log message not found in App Insights logs within 5 minutes")
+
+
+def test_appinsights_exception(app_appinsights: flask.Flask):
+    @app_appinsights.set_user_run
+    def run(input_data):
+        raise Exception("Test Run Exception")
+
+    data_capture_obj = {}
+
+    def print_log_helper(exception_info, extra):
+        nonlocal data_capture_obj
+        data_capture_obj = extra
+
+    logs_channel = Mock()
+
+    logs_channel.exception.side_effect = print_log_helper
+    from azureml_inference_server_http.server import appinsights_client
+
+    appinsights_client.logger = logs_channel
+
+    response = app_appinsights.test_client().get_score()
+
+    assert response.status_code == 500
+    assert (
+        response.data
+        == b'{"message": "An unexpected error occurred in scoring script. Check the logs for more info."}'
+    )
+    custom_dimensions = data_capture_obj["custom_dimensions"]
+    # Expect 3 items
+    assert len(custom_dimensions) == 3
+    uuid.UUID(custom_dimensions["Request Id"]).hex
+
+
+def test_appinsights_response_not_string(app_appinsights: flask.Flask):
+    """Verifies the appinsights logging with scoring request response not a valid string"""
+
+    mock_tracer = Mock()
+    mock_span = BlankSpan()
+    mock_tracer.span = Mock(return_value=mock_span)
+
+    @app_appinsights.set_user_run
+    def run(input_data):
+        return AMLResponse(b"xd8\xe1\xb7\xeb\xa8\xe5", 200)
+
+    app_appinsights.azml_blueprint.appinsights_client.tracer = mock_tracer
+    response = app_appinsights.test_client().get_score()
+    assert response.status_code == 200
+    expected_data = {
+        "resultCode": "200",
+        "success": True,
+        "name": "/score",
+        "url": "http://localhost/score",
+        "Container Id": "Unknown",
+        "Response Value": '"Scoring request response payload is a non serializable object or raw binary"',
+        "Workspace Name": "",
+        "Service Name": "ML service",
+    }
+    for item in expected_data:
+        assert expected_data[item] == mock_span.attributes[item]
+
+
+def test_appinsights_request_no_response_payload_log(app_appinsights: flask.Flask):
+    mock_tracer = Mock()
+    mock_span = BlankSpan()
+    mock_tracer.span = Mock(return_value=mock_span)
+
+    app_appinsights.azml_blueprint.appinsights_client.tracer = mock_tracer
+    response = app_appinsights.test_client().get_score()
+    assert response.status_code == 200
+    expected_data = {
+        "resultCode": "200",
+        "success": True,
+        "name": "/score",
+        "url": "http://localhost/score",
+        "Container Id": "Unknown",
+        "Client Request Id": "",
+        "Response Value": '"{}"',
+        "Workspace Name": "",
+        "Service Name": "ML service",
+    }
+    # Expect 13 items
+    assert len(mock_span.attributes) == 13
+
+    for item in expected_data:
+        assert expected_data[item] == mock_span.attributes[item]
+
+    uuid.UUID(mock_span.span_id).hex
+    # Just check that duration header is logged, as it will be some string time value
+    assert "duration" in mock_span.attributes
+
+
+def test_appinsights_model_log_with_clientrequestid(app_appinsights):
+    """Verifies that a GET request to the /score path with client request id and request id send proper logs"""
+
+    @app_appinsights.set_user_run
+    def run(input_data):
+        return json.loads(input_data)
+
+    data_capture_obj = {}
+
+    def print_log_helper(exception_info, extra):
+        nonlocal data_capture_obj
+        data_capture_obj = extra
+
+    logs_channel = Mock()
+
+    logs_channel.info.side_effect = print_log_helper
+    from azureml_inference_server_http.server import appinsights_client
+
+    appinsights_client.logger = logs_channel
+
+    response = app_appinsights.test_client().get_score(
+        {"param1": "hello", "param2": "world"},
+        content_type="html/text",
+        headers={"x-request-id": "623c3df9-3ef0-4905-a3cc-6ef015f17c3f", "x-ms-client-request-id": "test-client-id"},
+    )
+
+    assert response.status_code == 200
+    expected_log_data = {
+        "Container Id": "Unknown",
+        "Workspace Name": "",
+        "Service Name": "ML service",
+        "Models": [],
+        "Input": '"{\\"param1\\": \\"hello\\", \\"param2\\": \\"world\\"}"',
+        "Prediction": '{"param1": "hello", "param2": "world"}',
+        "Request Id": "623c3df9-3ef0-4905-a3cc-6ef015f17c3f",
+        "Client Request Id": "test-client-id",
+    }
+
+    custom_dimensions = data_capture_obj["custom_dimensions"]
+    # Expect 8 items
+    assert len(custom_dimensions) == 8
+
+    for item in expected_log_data:
+        assert expected_log_data[item] == custom_dimensions[item]
+
+
+def test_appinsights_model_log_without_clientrequestid(app_appinsights):
+    """Verifies that a GET request to the /score path without client request id and request id send proper logs"""
+
+    @app_appinsights.set_user_run
+    def run(input_data):
+        return json.loads(input_data)
+
+    data_capture_obj = {}
+
+    def print_log_helper(exception_info, extra):
+        nonlocal data_capture_obj
+        data_capture_obj = extra
+
+    logs_channel = Mock()
+
+    logs_channel.info.side_effect = print_log_helper
+    from azureml_inference_server_http.server import appinsights_client
+
+    appinsights_client.logger = logs_channel
+
+    response = app_appinsights.test_client().get_score(
+        {"param1": "hello", "param2": "world"}, content_type="html/text"
+    )
+
+    assert response.status_code == 200
+    expected_log_data = {
+        "Container Id": "Unknown",
+        "Workspace Name": "",
+        "Service Name": "ML service",
+        "Models": [],
+        "Input": '"{\\"param1\\": \\"hello\\", \\"param2\\": \\"world\\"}"',
+        "Prediction": '{"param1": "hello", "param2": "world"}',
+        "Client Request Id": "",
+    }
+
+    custom_dimensions = data_capture_obj["custom_dimensions"]
+    # Expect 8 items
+    assert len(custom_dimensions) == 8
+
+    for item in expected_log_data:
+        assert expected_log_data[item] == custom_dimensions[item]
+
+    uuid.UUID(custom_dimensions["Request Id"]).hex

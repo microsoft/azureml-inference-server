@@ -140,6 +140,6 @@ class AMLInferenceBlueprint(Blueprint):
 
         logger.info(f"Scoring timeout is set to {config.scoring_timeout}")
 
-    def register(self, app, options):
+    def register(self, *args, **kwargs):
         self.setup()
-        super(AMLInferenceBlueprint, self).register(app, options)
+        super(AMLInferenceBlueprint, self).register(*args, **kwargs)
