@@ -1,0 +1,62 @@
+name: azureml-inference-http-server E2E CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+    working-directory: src/azureml-inference-server-http/
+
+jobs:
+  azureml-inference-http-server-E2E-CI:
+    strategy:
+      matrix:
+        python_version: ['3.7', '3.8', '3.9']
+        pool_vmImage: ['ubuntu-latest', 'windows-latest']
+    runs-on: ${{matrix.pool_vmImage}}
+    environment: Server-CI
+
+    steps:
+      - name: Clone branch
+        uses: actions/checkout@v3
+
+      # Specify the python version
+      - name: Set Python version
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{matrix.python_version}}
+
+      - name: Install azureml_inference_server_http
+        run: |
+            pip install .[dev]
+      - name: Run E2E Tests
+        run: |
+            cd tests/azmlinfsrv
+            if [ "$RUNNER_OS" == "Linux" ]; then
+              sudo env "PATH=$PATH" python -m pytest --junitxml=out/TEST-component-results.xml --test_run_name=test
+            else
+              pytest --junitxml=out/TEST-component-results.xml --test_run_name=test
+            fi
+        shell: bash
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: runner.os == 'Linux' && always()
+        with:
+          files: |
+            /home/runner/work/azureml-inference-server/azureml-inference-server/src/azureml-inference-server-http/tests/azmlinfsrv/out/TEST-component-results.xml
+          comment_title: Test Results for Python Version ${{matrix.python_version}}
+          check_name: ${{matrix.pool_vmImage}} Python ${{matrix.python_version}}
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        if: runner.os == 'Windows' && always()
+        with:
+          files: |
+            D:\a\azureml-inference-server\azureml-inference-server\src\azureml-inference-server-http\tests\azmlinfsrv\out\TEST-component-results.xml
+          comment_title: Test Results for Python Version ${{matrix.python_version}}
+          check_name: ${{matrix.pool_vmImage}} Python ${{matrix.python_version}}
