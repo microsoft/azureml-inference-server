@@ -1,0 +1,52 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]  
+
+defaults:
+  run:
+    shell: bash
+    working-directory: src/azureml-inference-server-http/
+
+jobs:
+  deploy-to-PyPI:
+    runs-on: ubuntu-latest
+    environment: Server-CI
+    steps:
+    - name: Clone the repository
+      uses: actions/checkout@v3
+
+    - name: Setup python version
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.8'
+
+    - name: Build wheels
+      run: |  
+        pip install wheel
+        python setup.py sdist bdist_wheel
+
+    - name: Install twine
+      run: |
+        pip install twine
+
+    # The step below publishes to testpypi in order to catch any issues
+    # with the package configuration that would cause a failure to upload
+    # to pypi. One example of such a failure is if a classifier is
+    # rejected by pypi (e.g "3 - Beta"). This would cause a failure during the
+    # middle of the package upload causing the action to fail, and certain packages
+    # might have already been updated, this would be bad.
+    - name: Publish to TestPyPI
+      env:
+        TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
+      run: |
+        twine upload --repository testpypi --skip-existing --verbose dist/*
+
+    - name: Publish to PyPI
+      env:
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: |
+        twine upload --skip-existing --verbose dist/*
