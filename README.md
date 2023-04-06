@@ -40,7 +40,6 @@ Check out the following documents for detailed information about every layer.
 
 - Server code:
   - Information:
-    - [High-level overview of HTTP server](docs/Network-Stack-Overview.md)
     - [Detailed breakdown of HTTP server](docs/AzureMLInferenceServer)
     - [Logging Summary](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-inference-server-http#understanding-logs)
 - Python Package: azureml-inference-server-http
