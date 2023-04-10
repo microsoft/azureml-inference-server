@@ -4,7 +4,7 @@ This python package contains the Azure Machine Learning inference server which i
 
 ## <a name="virtualenv">Setting your environment</a>
 
-- Clone the [o16n-base-images](https://github.com/microsoft/azureml-inference-server) repository.
+- Clone the [azureml-inference-server](https://github.com/microsoft/azureml-inference-server) repository.
 - Install [Python 3.8](https://www.python.org/downloads/).
 - Install the virtualenv python package with `pip install virtualenv`.
 - Create a new virtual environment with `virtualenv <env name>`, for example `virtualenv amlinf`.
