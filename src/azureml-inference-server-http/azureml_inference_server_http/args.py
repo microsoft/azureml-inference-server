@@ -49,6 +49,9 @@ def parse_arguments():
         "--port", required=False, type=validate_port, help="The serving port of the server. Default is 5001."
     )
     parser.add_argument(
+        "--health_port", required=False, type=validate_port, help="The health port of the server. Default is 5000."
+    )
+    parser.add_argument(
         "--worker_count",
         required=False,
         type=validate_worker_count,

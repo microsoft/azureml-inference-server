@@ -2,13 +2,22 @@ from datetime import timedelta
 import uuid
 import pytest
 import requests
-import sys
 import shutil
 import pip
+import sys
+import json
 
 from azureml_inference_server_http import __version__
 
-from .utils import start_server, score_with_post, validate_server_crash, contains_log, contains_log_regex
+from .utils import (
+    cleanup,
+    start_server,
+    score_with_post,
+    health_with_get,
+    validate_server_crash,
+    contains_log,
+    contains_log_regex,
+)
 from ..constants import STDERR_FILE_PATH, STDOUT_FILE_PATH, DEFAULT_PORT
 
 DATE_TIME_REGEX = r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}"
@@ -17,7 +26,7 @@ DATE_TIME_REGEX = r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}"
 def test_valid_entry_script_ok(log_directory):
     server_process = start_server(log_directory, ["--entry_script", "./resources/valid_score.py"])
     req = score_with_post()
-    server_process.kill()
+    cleanup(server_process)
     assert req.ok
 
 
@@ -51,25 +60,31 @@ def test_port_invalid_port_timeout(log_directory):
 
     assert connection_error.type == requests.exceptions.ConnectionError
 
-    server_process.kill()
+    cleanup(server_process)
 
 
 def test_port_use_default_ok(log_directory):
     server_process = start_server(log_directory, ["--entry_script", "./resources/valid_score.py"])
     req = score_with_post(port=DEFAULT_PORT)
-    server_process.kill()
+    cleanup(server_process)
     assert req.ok
 
 
 def test_port_already_in_use_raises_oserror(log_directory):
-    server_process_running = start_server(log_directory, ["--entry_script", "./resources/valid_score.py"])
-    server_process_failed = start_server(log_directory, ["--entry_script", "./resources/valid_score.py"])
+    server_process_running = start_server(
+        log_directory,
+        ["--entry_script", "./resources/valid_score.py"],
+    )
+    server_process_failed = start_server(
+        log_directory,
+        ["--entry_script", "./resources/valid_score.py"],
+    )
 
     # Timeout is longer to account for ~5 seconds worth of retries on Gunicorn when running on linux.
     validate_server_crash(server_process_failed, timeout=timedelta(seconds=15))
 
     req = score_with_post()
-    server_process_running.kill()
+    cleanup(server_process_running)
     assert req.ok
 
 
@@ -80,7 +95,7 @@ def test_port_custom_port_ok(log_directory):
         log_directory, ["--entry_script", "./resources/valid_score.py", "--port", server_port]
     )
     req = score_with_post(port=request_port)
-    server_process.kill()
+    cleanup(server_process)
     assert req.ok
 
 
@@ -91,7 +106,7 @@ def test_no_arg_from_cli_ok(log_directory):
     assert contains_log(log_directory, STDOUT_FILE_PATH, "AML_APP_INSIGHTS_ENABLED:false")
     assert contains_log(log_directory, STDOUT_FILE_PATH, "AML_APP_INSIGHTS_KEY:__NONE__")
     assert contains_log(log_directory, STDOUT_FILE_PATH, "AZUREML_MODEL_DIR:__NONE__")
-    server_process.kill()
+    cleanup(server_process)
     assert req.ok
 
 
@@ -101,7 +116,7 @@ def test_model_dir_arg_from_cli_ok(log_directory):
         log_directory, ["--entry_script", "./resources/score_validate_env_vars.py", "--model_dir", model_dir]
     )
     req = score_with_post()
-    server_process.kill()
+    cleanup(server_process)
     assert contains_log(log_directory, STDOUT_FILE_PATH, f"AZUREML_MODEL_DIR:{model_dir}")
     assert req.ok
 
@@ -109,7 +124,7 @@ def test_model_dir_arg_from_cli_ok(log_directory):
 def test_server_version_header(log_directory):
     server_process = start_server(log_directory, ["--entry_script", "./resources/valid_score.py"])
     req = score_with_post()
-    server_process.kill()
+    cleanup(server_process)
     assert req.ok
     assert req.headers["x-ms-server-version"] == f"azmlinfsrv/{__version__}"
 
@@ -120,7 +135,7 @@ def test_server_version_enabled_header(log_directory):
         log_directory, args=["--entry_script", "./resources/valid_score.py"], environment=env
     )
     req = score_with_post()
-    server_process.kill()
+    cleanup(server_process)
     assert req.ok
     assert "x-ms-server-version" in req.headers
 
@@ -131,7 +146,7 @@ def test_server_version_not_enabled_header(log_directory):
         log_directory, args=["--entry_script", "./resources/valid_score.py"], environment=env
     )
     req = score_with_post()
-    server_process.kill()
+    cleanup(server_process)
     assert req.ok
     assert "x-ms-server-version" not in req.headers
 
@@ -142,7 +157,7 @@ def test_server_version_enabled_bad_value(log_directory):
         log_directory, args=["--entry_script", "./resources/valid_score.py"], environment=env
     )
     req = score_with_post()
-    server_process.kill()
+    cleanup(server_process)
     assert req.ok
     assert "x-ms-server-version" not in req.headers
 
@@ -151,7 +166,7 @@ def test_print_init_ok(log_directory):
     server_process = start_server(log_directory, ["--entry_script", "./resources/valid_score.py"])
     req = score_with_post()
 
-    server_process.kill()
+    cleanup(server_process)
     log_regex = rf"{DATE_TIME_REGEX} I \[\d+\] azmlinfsrv.print - Initializing"
     assert contains_log_regex(log_directory, STDOUT_FILE_PATH, log_regex)
     assert req.ok
@@ -162,7 +177,7 @@ def test_server_import_aml_contrib_services_redirect(log_directory):
         log_directory, args=["--entry_script", "./resources/score_aml_contrib_services_import.py"]
     )
     req = score_with_post()
-    server_process.kill()
+    cleanup(server_process)
     assert req.ok
 
 
@@ -170,7 +185,7 @@ def test_print_run_ok_and_single_print(log_directory):
     server_process = start_server(log_directory, ["--entry_script", "./resources/valid_score.py"])
     req = score_with_post()
 
-    server_process.kill()
+    cleanup(server_process)
     assert contains_log_regex(
         log_directory,
         STDOUT_FILE_PATH,
@@ -189,7 +204,7 @@ def test_log_configurability(log_directory, tmp_path):
     shutil.copy("./resources/alternate_log_config.json", tmp_path / "logging.json")
 
     server_process = start_server(log_directory, ["--entry_script", "./valid_score.py"], environment=env)
-    server_process.kill()
+    cleanup(server_process)
 
     assert contains_log_regex(
         log_directory,
@@ -207,7 +222,7 @@ def test_model_dir_env_var_cli_overrides_env(log_directory):
         environment=env,
     )
     req = score_with_post()
-    server_process.kill()
+    cleanup(server_process)
     assert contains_log(log_directory, STDOUT_FILE_PATH, f"AZUREML_MODEL_DIR:{model_dir}")
     assert req.ok
 
@@ -218,7 +233,7 @@ def test_model_dir_env_var_no_cli_ok(log_directory):
         log_directory=log_directory, args=["--entry_script", "./resources/score_validate_env_vars.py"], environment=env
     )
     req = score_with_post()
-    server_process.kill()
+    cleanup(server_process)
 
     assert not contains_log(log_directory, STDOUT_FILE_PATH, "Use the --model_dir command line argument to set it.")
     assert req.ok
@@ -241,7 +256,7 @@ def test_app_insights_cli_ok(log_directory):
     assert contains_log(log_directory, STDOUT_FILE_PATH, "Valid Application Insights instrumentation key provided.")
     assert contains_log(log_directory, STDOUT_FILE_PATH, f"AML_APP_INSIGHTS_KEY:{app_insights_key}")
     assert contains_log(log_directory, STDOUT_FILE_PATH, "AML_APP_INSIGHTS_ENABLED:true")
-    server_process.kill()
+    cleanup(server_process)
     assert req.ok
 
 
@@ -263,7 +278,7 @@ def test_app_insights_bad_key_cli_ok(log_directory):
     assert contains_log(log_directory, STDOUT_FILE_PATH, "Application Insights has been disabled.")
     req = score_with_post()
     assert contains_log(log_directory, STDOUT_FILE_PATH, "AML_APP_INSIGHTS_ENABLED:false")
-    server_process.kill()
+    cleanup(server_process)
     assert req.ok
 
 
@@ -274,7 +289,7 @@ def test_worker_count_env_var(log_directory):
     )
     req = score_with_post()
     assert contains_log(log_directory, STDOUT_FILE_PATH, f"Worker Count: 2")
-    server_process.kill()
+    cleanup(server_process)
     assert req.ok
 
 
@@ -285,7 +300,7 @@ def test_worker_timeout_env_var(log_directory):
     )
     req = score_with_post()
     assert contains_log(log_directory, STDOUT_FILE_PATH, f"Worker Timeout (seconds): 20")
-    server_process.kill()
+    cleanup(server_process)
     assert req.ok
 
 
@@ -302,7 +317,7 @@ def test_app_insights_cli_env_var(log_directory):
     assert contains_log(log_directory, STDOUT_FILE_PATH, "Valid Application Insights instrumentation key provided.")
     assert contains_log(log_directory, STDOUT_FILE_PATH, f"AML_APP_INSIGHTS_KEY:{app_insights_key}")
     assert contains_log(log_directory, STDOUT_FILE_PATH, "AML_APP_INSIGHTS_ENABLED:true")
-    server_process.kill()
+    cleanup(server_process)
     assert req.ok
 
 
@@ -317,7 +332,7 @@ def test_app_insights_false_if_invalid(log_directory):
     assert contains_log(log_directory, STDOUT_FILE_PATH, "Application Insights Key: AppInsights key provided")
     assert contains_log(log_directory, STDOUT_FILE_PATH, "Application Insights Enabled: false")
     assert contains_log(log_directory, STDOUT_FILE_PATH, "AML_APP_INSIGHTS_ENABLED:false")
-    server_process.kill()
+    cleanup(server_process)
     assert req.ok
 
 
@@ -342,7 +357,7 @@ def test_app_insights_cli_over_env(log_directory):
     assert contains_log(log_directory, STDOUT_FILE_PATH, "Application Insights has been disabled.")
     req = score_with_post()
     assert contains_log(log_directory, STDOUT_FILE_PATH, "AML_APP_INSIGHTS_ENABLED:false")
-    server_process.kill()
+    cleanup(server_process)
     assert req.ok
 
 
@@ -355,7 +370,7 @@ def test_server_port_set_to_default(log_directory):
 
     assert contains_log(log_directory, STDOUT_FILE_PATH, "Server Port: 5001")
     req = score_with_post()
-    server_process.kill()
+    cleanup(server_process)
     assert req.ok
 
 
@@ -371,7 +386,7 @@ def test_cors_enabled(log_directory):
     )
     req = score_with_post()
     assert contains_log(log_directory, STDOUT_FILE_PATH, "CORS for the specified origins: Enabling CORS for *")
-    server_process.kill()
+    cleanup(server_process)
     assert req.ok
 
 
@@ -391,7 +406,7 @@ def test_cors_enabled_for_multiple_origins(log_directory):
         STDOUT_FILE_PATH,
         "CORS for the specified origins: Enabling CORS for www.microsoft.com, www.azure.com, www.bing.com",
     )
-    server_process.kill()
+    cleanup(server_process)
     assert req.ok
 
 
@@ -412,5 +427,79 @@ def test_cors_enabled_without_package(log_directory):
         STDOUT_FILE_PATH,
         "CORS for the specified origins: CORS cannot be enabled because the flask-cors package is not installed.",
     )
-    server_process.kill()
+    cleanup(server_process)
+    assert req.ok
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="Skip on Windows")
+def test_seperate_health_port(log_directory):
+    env = {"SEPERATE_HEALTH_ENDPOINT": "true"}
+    server_process = start_server(
+        log_directory=log_directory,
+        args=["--entry_script", "./resources/valid_score.py"],
+        environment=env,
+    )
+
+    assert contains_log(log_directory, STDOUT_FILE_PATH, "Health Port: 5000")
+    req = health_with_get()
+    cleanup(server_process)
+    assert req.ok
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="Skip on Windows")
+def test_set_custom_health_port_cli(log_directory):
+    env = {"SEPERATE_HEALTH_ENDPOINT": "true"}
+    health_port = "8346"
+    server_process = start_server(
+        log_directory,
+        ["--entry_script", "./resources/valid_score.py", "--health_port", health_port],
+        environment=env,
+    )
+
+    assert contains_log(log_directory, STDOUT_FILE_PATH, "Health Port: 8346")
+    req = health_with_get(port=health_port)
+    cleanup(server_process)
+    assert req.ok
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="Skip on Windows")
+def test_no_custom_health_port(log_directory):
+    server_process = start_server(
+        log_directory,
+        ["--entry_script", "./resources/valid_score.py"],
+    )
+
+    assert contains_log(log_directory, STDOUT_FILE_PATH, "Health Port: 5001")
+    req = health_with_get(port=5001)
+    cleanup(server_process)
+    assert req.ok
+
+
+def test_streaming_score(log_directory):
+    server_process = start_server(
+        log_directory,
+        args=[
+            "--entry_script",
+            "./resources/streaming-score.py",
+        ],
+    )
+    data = {"items": ["sentence 1", "sentence 2", "sentence 3", "sentence 4", "sentence 5"]}
+    json_data = json.dumps(data)
+    req = score_with_post(json=json.loads(json_data), stream=True)
+
+    chunkedOutput = []
+    assert callable(req.iter_content) and hasattr(req.iter_content(), "__iter__")
+    for chunk in req.iter_content(chunk_size=None):
+        if chunk:
+            chunkedOutput.append(chunk.decode("utf-8"))
+
+    for idx, item in enumerate(data["items"]):
+        assert chunkedOutput[idx] == f"item: {item}\n\n"
+
+    assert contains_log_regex(
+        log_directory,
+        STDOUT_FILE_PATH,
+        r"POST\s\/\w+\s\d{3}\s\d+\.\d{3}ms\sN\/A",
+    )
+    cleanup(server_process)
     assert req.ok

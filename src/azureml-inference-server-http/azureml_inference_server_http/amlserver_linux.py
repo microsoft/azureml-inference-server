@@ -4,6 +4,7 @@ import sys
 import gunicorn.app.wsgiapp
 
 from .constants import (
+    DEFAULT_HEALTH_PORT,
     DEFAULT_HOST,
     DEFAULT_PORT,
     DEFAULT_WORKER_COUNT,
@@ -14,7 +15,7 @@ from .constants import (
 )
 
 
-def run(host, port, worker_count):
+def run(host, port, worker_count, health_port=None):
     #
     # Manipulate the sys.argv to apply settings to gunicorn.app.wsgiapp.
     #
@@ -42,6 +43,10 @@ def run(host, port, worker_count):
         "/dev/null",
     ]
 
+    if health_port:
+        sys.argv.insert(1, "-b")
+        sys.argv.insert(2, f"{host}:{health_port}")
+
     if os.environ.get(ENV_WORKER_PRELOAD, DEFAULT_WORKER_PRELOAD).lower() == "true":
         sys.argv.append("--preload")
 
@@ -51,4 +56,4 @@ def run(host, port, worker_count):
 
 
 if __name__ == "__main__":
-    run(DEFAULT_HOST, DEFAULT_PORT, DEFAULT_WORKER_COUNT)
+    run(DEFAULT_HOST, DEFAULT_PORT, DEFAULT_WORKER_COUNT, DEFAULT_HEALTH_PORT)

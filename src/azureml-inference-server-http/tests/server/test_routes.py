@@ -1,12 +1,11 @@
 import logging
 
-from azureml_inference_server_http.api.aml_response import AMLResponse
 import flask
 from inference_schema.parameter_types.standard_py_parameter_type import StandardPythonParameterType
 from inference_schema.schema_decorators import input_schema
 import pytest
 
-
+from azureml_inference_server_http.api.aml_response import AMLResponse
 from azureml_inference_server_http.server.routes import HEADER_LIMIT
 from .common import TestingClient
 from .utils import assert_valid_guid
