@@ -39,10 +39,12 @@ def print_server_settings():
         ENV_WORKER_COUNT: "Worker Count",
         ENV_WORKER_TIMEOUT: "Worker Timeout (seconds)",
         ENV_PORT: "Server Port",
+        ENV_HEALTH_PORT: "Health Port",
         ENV_AML_APP_INSIGHTS_ENABLED: "Application Insights Enabled",
         ENV_AML_APP_INSIGHTS_KEY: "Application Insights Key",
         ENV_AZUREML_SERVER_VERSION: "Inferencing HTTP server version",
         ENV_AML_CORS_ORIGINS: "CORS for the specified origins",
+        ENV_SEPERATE_HEALTH_ENDPOINT: "Create dedicated endpoint for health",
     }
 
     print()
@@ -68,7 +70,7 @@ def print_routes():
     print()
     print("Server Routes")
     print("---------------")
-    print(f"Liveness Probe: GET   127.0.0.1:{os.environ[ENV_PORT]}/")
+    print(f"Liveness Probe: GET   127.0.0.1:{os.environ[ENV_HEALTH_PORT]}/")
     print(f"Score:          POST  127.0.0.1:{os.environ[ENV_PORT]}/score")
     print()
 
@@ -148,6 +150,14 @@ def merge_configuration(args):
     os.environ[ENV_PORT] = str(DEFAULT_PORT)
     set_environment_variables(args.port, ENV_PORT, default_val=DEFAULT_PORT)
 
+    # If seperate health endpoint env is set, overwrite env of health_port w/ args.health_port or default health port
+    # If not, then overwrite env of health_port with the normal default port (no seperate listener created)
+    if os.getenv(ENV_SEPERATE_HEALTH_ENDPOINT) == "true":
+        os.environ[ENV_HEALTH_PORT] = str(DEFAULT_HEALTH_PORT)
+        set_environment_variables(args.health_port, ENV_HEALTH_PORT, default_val=DEFAULT_HEALTH_PORT)
+    else:
+        set_environment_variables(args.port, ENV_HEALTH_PORT, default_val=DEFAULT_PORT)
+
     # We assume if the instrumentation key is set via cli, then appinsights is enabled
     # Validation takes place later and will disable this if not a valid key
     if args.appinsights_instrumentation_key is not None:
@@ -182,13 +192,25 @@ def run():
 
     if sys.platform == "win32":
         from azureml_inference_server_http import amlserver_win as srv
+
+        srv.run(DEFAULT_HOST, int(os.environ[ENV_PORT]), int(os.environ[ENV_WORKER_COUNT]))
     else:
         if os.environ[ENV_PREPOST] == "True":
             from azureml_inference_server_http import aml_prepost_server as srv
+
+            srv.run(DEFAULT_HOST, int(os.environ[ENV_PORT]), int(os.environ[ENV_WORKER_COUNT]))
         else:
             from azureml_inference_server_http import amlserver_linux as srv
 
-    srv.run(DEFAULT_HOST, int(os.environ[ENV_PORT]), int(os.environ[ENV_WORKER_COUNT]))
+            if os.getenv(ENV_SEPERATE_HEALTH_ENDPOINT) == "true":
+                srv.run(
+                    DEFAULT_HOST,
+                    int(os.environ[ENV_PORT]),
+                    int(os.environ[ENV_WORKER_COUNT]),
+                    int(os.environ[ENV_HEALTH_PORT]),
+                )
+            else:
+                srv.run(DEFAULT_HOST, int(os.environ[ENV_PORT]), int(os.environ[ENV_WORKER_COUNT]))
 
 
 if __name__ == "__main__":

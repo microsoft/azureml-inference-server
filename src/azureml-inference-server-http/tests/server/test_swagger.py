@@ -1,6 +1,7 @@
 import json
 import pathlib
 
+import flask
 from inference_schema._constants import ALL_SUPPORTED_VERSIONS
 from inference_schema.parameter_types.numpy_parameter_type import NumpyParameterType
 from inference_schema.parameter_types.standard_py_parameter_type import StandardPythonParameterType
@@ -8,7 +9,7 @@ from inference_schema.schema_decorators import input_schema, output_schema
 import numpy as np
 import pytest
 
-import flask
+
 from azureml_inference_server_http.server.swagger import Swagger
 from .common import data_path, TestingClient
 

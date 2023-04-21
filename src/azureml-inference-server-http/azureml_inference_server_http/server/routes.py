@@ -6,10 +6,10 @@ import time
 import traceback
 import uuid
 
-from azureml_inference_server_http.api.aml_response import AMLResponse
 from flask import g, request, Response
 from werkzeug.exceptions import HTTPException
 
+from azureml_inference_server_http.api.aml_response import AMLResponse
 from .aml_blueprint import AMLInferenceBlueprint
 from .config import config
 from .input_parsers import (
@@ -110,6 +110,13 @@ def _init_headers() -> None:
     legacy_client_request_id = request.headers.get("x-ms-request-id", "")
     client_request_id = request.headers.get("x-ms-client-request-id", "")
     if legacy_client_request_id:
+        # Warning message
+        logger.warning(
+            (
+                "x-ms-request-id header has been deprecated and will be removed from future versions of the server."
+                " Please use x-ms-client-request-id."
+            )
+        )
         # When `x-ms-request-id` is set and `x-ms-client-request-id` isn't. Use `x-ms-request-id` as the Client Request
         # ID.
         if not client_request_id:
@@ -159,7 +166,10 @@ def _after_request(response: Response) -> Response:
         if request.query_string:
             path += f"?{request.query_string.decode()}"
 
-        response_length = response.calculate_content_length()
+        if response.is_streamed:
+            response_length = "N/A"
+        else:
+            response_length = response.calculate_content_length()
 
         response_props = (
             request.method,

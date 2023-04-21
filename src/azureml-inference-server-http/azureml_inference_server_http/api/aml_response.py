@@ -3,8 +3,9 @@
 # ---------------------------------------------------------
 """AMLResponse class used by score.py that needs raw HTTP access"""
 
-from flask import Response
 import json
+
+from flask import Response
 
 
 class AMLResponse(Response):

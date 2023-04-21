@@ -3,9 +3,10 @@ import subprocess
 import requests
 from datetime import datetime, timedelta
 import time
-from ..constants import SERVER_COMMAND, DEFAULT_PORT, LOG_FILE, STDERR_FILE_PATH, STDOUT_FILE_PATH
+from ..constants import DEFAULT_HEALTH_PORT, SERVER_COMMAND, DEFAULT_PORT, LOG_FILE, STDERR_FILE_PATH, STDOUT_FILE_PATH
 from os.path import join
 import re
+import psutil
 
 
 def get_logs(log_directory, log_filename):
@@ -80,9 +81,14 @@ def start_server(log_directory, args, timeout=timedelta(seconds=15), port=DEFAUL
     return server_process
 
 
-def score_with_post(headers=None, data=None, port=DEFAULT_PORT):
+def score_with_post(headers=None, data=None, json=None, port=DEFAULT_PORT, stream=False):
     url = f"http://127.0.0.1:{port}/score"
-    return requests.post(url=url, headers=headers, data=data)
+    return requests.post(url=url, headers=headers, data=data, json=json, stream=stream)
+
+
+def health_with_get(port=DEFAULT_HEALTH_PORT):
+    url = f"http://127.0.0.1:{port}/"
+    return requests.get(url=url)
 
 
 def swagger_with_get(headers=None, port=DEFAULT_PORT):
@@ -130,3 +136,20 @@ def get_model_dir(root_folder):
         "data",
         "models",
     )
+
+
+def cleanup(process):
+    try:
+        gunicorn = psutil.Process(process.pid)
+
+        if gunicorn.status != "terminated":
+            # Kill children
+            children = gunicorn.children(recursive=True)
+            for child in children:
+                child.kill()
+
+            # Kill parent
+            gunicorn.kill()
+    except Exception as e:
+        print("Failed to cleanup processes, may have crashed already.")
+        print(e)

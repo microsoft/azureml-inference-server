@@ -1,12 +1,12 @@
 import json
 import pytest
-from .utils import start_server, swagger_with_get
+from .utils import start_server, swagger_with_get, cleanup
 
 
 def test_swagger_generated(log_directory):
     server_process = start_server(log_directory, ["--entry_script", "./resources/valid_score_swagger.py"])
     req = swagger_with_get()
-    server_process.kill()
+    cleanup(server_process)
 
     assert req.ok
 

@@ -96,13 +96,8 @@ class AMLInferenceBlueprint(Blueprint):
                 else:
                     logger.error(f"The directory {config.app_root} not an accessible directory in the container.")
             elif "FileNotFoundError" in traceback.format_exc():
-                logger.error("Scoring script not found. No such file or directory.")
-                logger.error(
-                    (
-                        "Expected script to be found in: "
-                        f"{os.path.join(config.app_root,config.entry_script.replace('/', os.sep))}"
-                    )
-                )
+                logger.error("No such file or directory.")
+                logger.error(traceback.format_exc())
             else:
                 logger.error(traceback.format_exc())
             sys.exit(3)
@@ -140,6 +135,6 @@ class AMLInferenceBlueprint(Blueprint):
 
         logger.info(f"Scoring timeout is set to {config.scoring_timeout}")
 
-    def register(self, app, options):
+    def register(self, *args, **kwargs):
         self.setup()
-        super(AMLInferenceBlueprint, self).register(app, options)
+        super(AMLInferenceBlueprint, self).register(*args, **kwargs)

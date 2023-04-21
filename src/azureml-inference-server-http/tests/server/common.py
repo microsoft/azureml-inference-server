@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import os
 from typing import Any, Dict, Optional, TypeVar
 
@@ -6,8 +7,6 @@ import flask.testing
 import inference_schema.schema_util
 import werkzeug.test
 import wrapt
-
-from contextlib import contextmanager
 
 import azureml_inference_server_http.server
 from azureml_inference_server_http.server.config import config

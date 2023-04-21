@@ -1,10 +1,11 @@
-from azureml_inference_server_http.api.aml_response import AMLResponse
+import logging
+
 import flask
 from inference_schema.parameter_types.standard_py_parameter_type import StandardPythonParameterType
 from inference_schema.schema_decorators import input_schema
 import pytest
 
-
+from azureml_inference_server_http.api.aml_response import AMLResponse
 from azureml_inference_server_http.server.routes import HEADER_LIMIT
 from .common import TestingClient
 from .utils import assert_valid_guid
@@ -59,6 +60,23 @@ def test_routes_request_id_limit(app: flask.Flask, client: TestingClient):
     assert "x-ms-client-request-id" not in response.headers
 
     assert response.json == {"message": f"x-request-id must not exceed {HEADER_LIMIT} characters"}
+
+
+def test_routes_x_ms_request_id(client: TestingClient, caplog):
+    """Ensure we log warning when the request has x-ms-request-id header"""
+
+    with caplog.at_level(logging.WARNING, logger="azmlinfsrv"):
+        response = client.get_score(headers={"x-ms-request-id": "1234"})
+        assert response.status_code == 200
+    info_tuple = (
+        "azmlinfsrv",
+        logging.WARNING,
+        (
+            "x-ms-request-id header has been deprecated and will be removed from future versions of the server. "
+            "Please use x-ms-client-request-id."
+        ),
+    )
+    assert info_tuple in caplog.record_tuples
 
 
 @pytest.mark.parametrize(("to_error"), [True, False])

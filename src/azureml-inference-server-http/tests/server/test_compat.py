@@ -1,9 +1,9 @@
 import json
 
-from azureml_inference_server_http.api.aml_request import rawhttp
-from azureml_inference_server_http.api.aml_response import AMLResponse
 import flask
 
+from azureml_inference_server_http.api.aml_request import rawhttp
+from azureml_inference_server_http.api.aml_response import AMLResponse
 from .common import TestingClient
 
 

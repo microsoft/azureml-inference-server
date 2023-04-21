@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import pathlib
 import shutil
@@ -20,6 +21,36 @@ from azureml_inference_server_http.server.user_script import (
 from .common import data_path, TestingClient, TestingUserScript
 
 # Load script
+
+
+def test_script_not_found(caplog, config):
+    """Ensure we throw error when main.py file is not found"""
+
+    with caplog.at_level(logging.ERROR, logger="azmlinfsrv"):
+        with pytest.raises(SystemExit) as expected_error:
+            from azureml_inference_server_http.server.create_app import create
+
+            config.entry_script = None
+            create()
+
+    expected_err_msg = "No score script found. Expected score script main.py."
+    error_tuple = ("azmlinfsrv", logging.ERROR, expected_err_msg)
+
+    assert error_tuple in caplog.record_tuples
+    assert expected_error.type == SystemExit
+
+
+def test_import_error_in_main(tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch, app: flask.Flask, caplog):
+    """Ensure we throw a proper error when the main can't be loaded because it's invalid."""
+
+    monkeypatch.syspath_prepend(tmp_path)
+    shutil.copyfile(data_path("user_scripts/import_error_main.py"), tmp_path / "main.py")
+    with caplog.at_level(logging.ERROR, logger="azmlinfsrv"):
+        with pytest.raises(SystemExit) as expected_error:
+            app.azml_blueprint.setup()
+
+    assert "Failed to import user script because it raised an unhandled exception" in caplog.record_tuples[0][2]
+    assert expected_error.type == SystemExit
 
 
 def test_user_script_load_main(
