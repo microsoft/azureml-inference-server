@@ -1,15 +1,5 @@
 # Project
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
-
-As the maintainer of this project, please make a few updates:
-
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
-
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
@@ -32,23 +22,17 @@ trademarks or logos is subject to and must follow
 Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
 Any use of third-party trademarks or logos are subject to those third-party's policies.
 
-
-
 ----
 
-# O16N Base Images
+# AzureML Inference Server
 
-The O16N code base consists of 3 layers:
-
-1. The server code. This is the Flask server or the Sanic server code.
-2. The azureml-inference-server-http python package, which wraps the server code and dependencies into a singular package.
-3. The inference images, which package other dependencies such as miniconda and nginx with the server code. Depending on the framework, the image will also include framework-specific packages, like pytorch.
-
-User provided files, such as the entry script, model files, and custom dependencies are added outside of the image and server. These files and dependencies are mounted separately.
+The HTTP server is the component that facilitates inferencing to deployed models. Requests made to the HTTP server run user-provided code that interfaces with the user models.
+This server is used with most images in the Azure ML ecosystem, and is considered the primary component of the base image, as it contains the python assets required for inferencing.
+This is the Flask server or the Sanic server code. The azureml-inference-server-http python package, wraps the server code and dependencies into a singular package.
 
 ## Quick Start
 
-Check out [this document](docs/Getting-Started.md) to start running our code.
+Check out [this document](src\azureml-inference-server-http\CONTRIBUTING.md) to start running our code.
 
 ## Layers
 
@@ -56,23 +40,10 @@ Check out the following documents for detailed information about every layer.
 
 - Server code:
   - Information:
-    - [High-level overview of HTTP server](docs/Base-Image-Network-Stack-Overview.md)
-    - [Detailed breakdown of HTTP server](docs/BaseImageHTTPServer)
-    - [Logging Summary](docs/Logging.md)
-  - Testing:
-    - [Manual test for appinsights logging](docs/Logging-E2E-Test-with-o16n-and-AzureMlCli.md)
+    - [Detailed breakdown of HTTP server](docs/AzureMLInferenceServer)
+    - [Logging Summary](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-inference-server-http#understanding-logs)
 - Python Package: azureml-inference-server-http
   - [How to build and run](src/azureml-inference-server-http/azureml_inference_server_http/CONTRIBUTING.md)
-- Inference Images:
-  - Running Information:
-    - [Build inference base image](base_images/inference/base/README.md)
-    - [Build framework images](base_images/frameworks/base/README.md)
-  - Testing:
-    - [Running validation tests locally](docs/Validation_Test)
-
-## Build and Release
-
-Checkout out [this document](/.devops/README.md) for information on the build and release pipes for the various components.
 
 
 ## Please contribute!

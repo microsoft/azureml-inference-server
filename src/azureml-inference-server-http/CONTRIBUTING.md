@@ -4,14 +4,14 @@ This python package contains the Azure Machine Learning inference server which i
 
 ## <a name="virtualenv">Setting your environment</a>
 
-- Clone the [o16n-base-images](https://msdata.visualstudio.com/Vienna/_git/o16n-base-images) repository.
+- Clone the [azureml-inference-server](https://github.com/microsoft/azureml-inference-server) repository.
 - Install [Python 3.8](https://www.python.org/downloads/).
 - Install the virtualenv python package with `pip install virtualenv`.
 - Create a new virtual environment with `virtualenv <env name>`, for example `virtualenv amlinf`.
 - Activate the new environment.
   - In Windows, with `<env name>/scripts/activate`
   - In Linux, with `. <env name>/bin/activate`
-- Navigate to the [azureml-inference-server-http](https://msdata.visualstudio.com/Vienna/_git/o16n-base-images?path=/src/azureml-inference-server-http) directory.
+- Navigate to the [azureml-inference-server-http](https://github.com/microsoft/azureml-inference-server/tree/main/src/azureml-inference-server-http) directory.
 - Open a terminal/cmd window and install the package with `pip install -e .[dev]`
 - Verify the command `azmlinfsrv` works.
 - Activate pre-commit hooks with `pre-commit install`
@@ -71,11 +71,11 @@ We have four sets of tests for the inferencing server.
 
 - Tests in `tests/azmlinfsrv` verify the behavior of the server launcher, which refers to the code in `azureml_inference_server_http/`. 
   - To run, run `pytest` in the
-    [tests/azmlinfsrv](https://msdata.visualstudio.com/Vienna/_git/o16n-base-images?path=/src/azureml-inference-server-http/tests/azmlinfsrv)
+    [tests/azmlinfsrv](https://github.com/microsoft/azureml-inference-server/tree/main/src/azureml-inference-server-http/tests/azmlinfsrv)
     directory.
 - Tests in `tests/prepost` verify the behavior of the prepost server, which refers to the code in `azureml_inference_server_http/prepost/`.
   - To run, run `pytest` in the
-    [tests/prepost](https://msdata.visualstudio.com/Vienna/_git/o16n-base-images?path=/src/azureml-inference-server-http/tests/prepost)
+    [tests/prepost](https://github.com/microsoft/azureml-inference-server/tree/main/src/azureml-inference-server-http/tests/prepost)
     directory.
 - Tests in `tests/server` verify the behavior of the main inferencing server, which refers to the code in `azureml_inference_server_http/server/`.
   - To run, run `python test_suite.py` in the
@@ -90,23 +90,8 @@ We have four sets of tests for the inferencing server.
 
 To build the package, follow these steps:
 
-- Navigate to the [azureml-inference-server-http](https://msdata.visualstudio.com/Vienna/_git/o16n-base-images?path=/src/azureml-inference-server-http) directory.
+- Navigate to the [azureml-inference-server-http](https://github.com/microsoft/azureml-inference-server/tree/main/src/azureml-inference-server-http) directory.
 - Open a terminal/cmd window and run one of these commands to build the package:
   - On Linux, `python3 setup.py bdist_wheel`
 
 This will create a dist/ directory which will contain the package's .whl.
-
-## Prepare a new version
-
-1. Update [_version.py](https://msdata.visualstudio.com/Vienna/_git/o16n-base-images?path=/src/azureml-inference-server-http/azureml_inference_server_http/_version.py) with a new version number.
-2. Under `/src/azureml-inference-server-http`, run `towncrier --draft` to see what the changelog would look like.
-3. If it looks good, run `towncrier` to commit the changelog to [CHANGELOG.rst](https://msdata.visualstudio.com/Vienna/_git/o16n-base-images?path=/src/azureml-inference-server-http/azureml_inference_server_http/CHANGELOG.rst)
-4. Create a PR with the changes.
-
-## Build & Release
-
-1. Create a production build using the [build pipeline](https://msdata.visualstudio.com/Vienna/_build?definitionId=15391)
-2. Once the build is completed release the build using the [release pipeline](https://msdata.visualstudio.com/Vienna/_release?_a=releases&view=mine&definitionId=1053)
-3. **Important: For major releases (in our case ~0.X.0), azureml-defaults must be updated to use this new package** 
-    1. Here is an example PR: [example](https://msdata.visualstudio.com/Vienna/_git/AzureMlCli/pullrequest/823041)
-    2. Systems images must also be updated
