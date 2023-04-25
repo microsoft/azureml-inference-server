@@ -1,3 +1,18 @@
+0.8.4 (2023-04-19)
+~~~~~~~~~~~~~~~~~~
+
+Features
+--------
+
+- Added ability to configure seperate dedicated health check port.
+
+Fixes
+-----
+
+- Restored streaming for score response.
+- Updated the error message related to scoring script not found.
+
+
 0.8.3 (2023-03-23)
 ~~~~~~~~~~~~~~~~~~
 

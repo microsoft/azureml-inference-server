@@ -54,7 +54,7 @@ setuptools.setup(
     description="Azure Machine Learning inferencing server.",
     long_description=get_long_description(),
     long_description_content_type="text/x-rst",
-    packages=setuptools.find_packages(exclude=["tests", "new_tests"]),
+    packages=setuptools.find_packages(exclude=["tests"]),
     classifiers=[
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",

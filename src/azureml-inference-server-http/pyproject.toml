@@ -1,5 +1,5 @@
 [tool.pytest.ini_options]
-testpaths = ["new_tests"]
+testpaths = ["tests/server/"]
 python_classes = []
 asyncio_mode = "auto"
 markers = [
@@ -12,9 +12,8 @@ markers = [
   extend-exclude = '''
   ^/(
       env/
-    | new_tests/data/user_scripts/
+    | tests/server/data/user_scripts/
     | tests/azmlinfsrv/resources/
-    | tests/server/unit-test-env/
   )
   '''
 

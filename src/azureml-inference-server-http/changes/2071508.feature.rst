@@ -1,2 +1,0 @@
-Supports loading server config from a json file. 
-Added support for a new env variable ``AZUREML_CONFIG_FILE``. Refer to README for detailed usage.
