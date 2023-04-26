@@ -131,7 +131,6 @@ def merge_configuration(args):
     if args.entry_script:
         os.environ[ENV_AZUREML_ENTRY_SCRIPT] = os.path.realpath(args.entry_script)
 
-    set_environment_variables(args.prepost, ENV_PREPOST, default_val=False)
     transport_protocol = "rest" if args.rest else "grpc"
     set_environment_variables(transport_protocol, ENV_BACKEND_TRANSPORT_PROTOCOL, default_val=False)
 
@@ -195,22 +194,17 @@ def run():
 
         srv.run(DEFAULT_HOST, int(os.environ[ENV_PORT]), int(os.environ[ENV_WORKER_COUNT]))
     else:
-        if os.environ[ENV_PREPOST] == "True":
-            from azureml_inference_server_http import aml_prepost_server as srv
+        from azureml_inference_server_http import amlserver_linux as srv
 
-            srv.run(DEFAULT_HOST, int(os.environ[ENV_PORT]), int(os.environ[ENV_WORKER_COUNT]))
+        if os.getenv(ENV_SEPERATE_HEALTH_ENDPOINT) == "true":
+            srv.run(
+                DEFAULT_HOST,
+                int(os.environ[ENV_PORT]),
+                int(os.environ[ENV_WORKER_COUNT]),
+                int(os.environ[ENV_HEALTH_PORT]),
+            )
         else:
-            from azureml_inference_server_http import amlserver_linux as srv
-
-            if os.getenv(ENV_SEPERATE_HEALTH_ENDPOINT) == "true":
-                srv.run(
-                    DEFAULT_HOST,
-                    int(os.environ[ENV_PORT]),
-                    int(os.environ[ENV_WORKER_COUNT]),
-                    int(os.environ[ENV_HEALTH_PORT]),
-                )
-            else:
-                srv.run(DEFAULT_HOST, int(os.environ[ENV_PORT]), int(os.environ[ENV_WORKER_COUNT]))
+            srv.run(DEFAULT_HOST, int(os.environ[ENV_PORT]), int(os.environ[ENV_WORKER_COUNT]))
 
 
 if __name__ == "__main__":

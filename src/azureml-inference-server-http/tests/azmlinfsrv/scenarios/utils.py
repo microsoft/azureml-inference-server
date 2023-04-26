@@ -113,31 +113,6 @@ def validate_server_crash(process, timeout=timedelta(seconds=5)):
     assert False
 
 
-def get_score_script(root_folder):
-    return join(
-        root_folder,
-        "src",
-        "azureml-inference-server-http",
-        "tests",
-        "azmlinfsrv",
-        "resources",
-        "prepost_score.py",
-    )
-
-
-def get_model_dir(root_folder):
-    return join(
-        root_folder,
-        "src",
-        "azureml-inference-server-http",
-        "azureml_inference_server_http",
-        "prepost_server",
-        "tests",
-        "data",
-        "models",
-    )
-
-
 def cleanup(process):
     try:
         gunicorn = psutil.Process(process.pid)
