@@ -73,10 +73,6 @@ We have four sets of tests for the inferencing server.
   - To run, run `pytest` in the
     [tests/azmlinfsrv](https://msdata.visualstudio.com/Vienna/_git/o16n-base-images?path=/src/azureml-inference-server-http/tests/azmlinfsrv)
     directory.
-- Tests in `tests/prepost` verify the behavior of the prepost server, which refers to the code in `azureml_inference_server_http/prepost/`.
-  - To run, run `pytest` in the
-    [tests/prepost](https://msdata.visualstudio.com/Vienna/_git/o16n-base-images?path=/src/azureml-inference-server-http/tests/prepost)
-    directory.
 - Tests in `tests/server` verify the behavior of the main inferencing server, which refers to the code in `azureml_inference_server_http/server/`.
   - To run, run `pytest` in this directory.
   - You can run a specific test with `pytest -k <test name>`, for example `pytest -k test_swagger_supported_versions`.

@@ -70,7 +70,6 @@ def parse_arguments():
         required=False,
         help="The relative or absolute path to the configuration file",
     )
-    parser.add_argument("--prepost", required=False, action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--rest", default=False, required=False, action="store_true", help=argparse.SUPPRESS)
 
     try:

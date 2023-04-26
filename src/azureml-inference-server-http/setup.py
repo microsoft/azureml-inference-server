@@ -35,7 +35,7 @@ def get_license():
         return fp.read()
 
 
-PREPOST_REQUIREMENTS = [
+REQUIREMENTS = [
     "aiohttp~=3.7.4.post0",
     "aiotask-context~=0.6.1",
     "grpcio-tools~=1.38.1",
@@ -81,7 +81,7 @@ setuptools.setup(
         'waitress==2.1.2; platform_system=="Windows"',
     ],
     extras_require={
-        "dev": PREPOST_REQUIREMENTS
+        "dev": REQUIREMENTS
         + [
             "azure-monitor-query",
             "black",
@@ -104,7 +104,7 @@ setuptools.setup(
             "towncrier==21.9.0",
             "wheel",
         ],
-        "all": PREPOST_REQUIREMENTS,
+        "all": REQUIREMENTS,
     },
     entry_points={"console_scripts": [f"azmlinfsrv={PACKAGE_DIR}.amlserver:run"]},
     include_package_data=True,

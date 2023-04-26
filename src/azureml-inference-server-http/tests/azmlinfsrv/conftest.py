@@ -49,31 +49,6 @@ def root_folder():
     )
 
 
-@pytest.fixture(scope="session", autouse=True)
-def mocked_triton(root_folder):
-    if sys.version_info < (3, 7):
-        yield
-    else:
-        path = os.path.join(
-            root_folder,
-            "src",
-            "azureml-inference-server-http",
-            "tests",
-            "prepost",
-        )
-        sys.path.append(path)
-        from mocked_triton import create_fake_triton
-        from mocked_triton_grpc import create_fake_grpc_triton
-
-        p1 = Process(target=create_fake_triton, args=(), daemon=True)
-        p2 = Process(target=create_fake_grpc_triton, args=(), daemon=True)
-        p1.start()
-        p2.start()
-        yield
-        p1.terminate()
-        p2.terminate()
-
-
 # Frees the default port used by the azureml server before the test is ran.
 @pytest.fixture(autouse=True)
 def free_port():
