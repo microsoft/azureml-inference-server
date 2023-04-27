@@ -6,11 +6,6 @@ on:
       - main
   workflow_dispatch:
 
-defaults:
-  run:
-    shell: bash
-    working-directory: src/azureml-inference-server-http/
-
 jobs:
   azureml-inference-http-server-E2E-CI:
     strategy:

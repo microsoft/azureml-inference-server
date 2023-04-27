@@ -4,11 +4,6 @@ on:
   release:
     types: [published]  
 
-defaults:
-  run:
-    shell: bash
-    working-directory: src/azureml-inference-server-http/
-
 jobs:
   deploy-to-PyPI:
     runs-on: ubuntu-latest
