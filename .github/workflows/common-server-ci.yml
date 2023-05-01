@@ -12,6 +12,10 @@ permissions:
   # Required for OIDC login to Azure
   id-token: write
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   Server-Tests:
     strategy:
