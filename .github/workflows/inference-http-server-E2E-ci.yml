@@ -9,7 +9,6 @@ on:
 defaults:
   run:
     shell: bash
-    working-directory: src/azureml-inference-server-http/
 
 jobs:
   azureml-inference-http-server-E2E-CI:
@@ -48,7 +47,7 @@ jobs:
         if: runner.os == 'Linux' && always()
         with:
           files: |
-            /home/runner/work/azureml-inference-server/azureml-inference-server/src/azureml-inference-server-http/tests/azmlinfsrv/out/TEST-component-results.xml
+            /home/runner/work/azureml-inference-server/azureml-inference-server/tests/azmlinfsrv/out/TEST-component-results.xml
           comment_title: Test Results for Python Version ${{matrix.python_version}}
           check_name: ${{matrix.pool_vmImage}} Python ${{matrix.python_version}}
 
@@ -57,6 +56,6 @@ jobs:
         if: runner.os == 'Windows' && always()
         with:
           files: |
-            D:\a\azureml-inference-server\azureml-inference-server\src\azureml-inference-server-http\tests\azmlinfsrv\out\TEST-component-results.xml
+            D:\a\azureml-inference-server\azureml-inference-server\tests\azmlinfsrv\out\TEST-component-results.xml
           comment_title: Test Results for Python Version ${{matrix.python_version}}
           check_name: ${{matrix.pool_vmImage}} Python ${{matrix.python_version}}

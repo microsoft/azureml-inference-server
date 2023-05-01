@@ -15,7 +15,6 @@ permissions:
 defaults:
   run:
     shell: bash
-    working-directory: src/azureml-inference-server-http/
 
 jobs:
   Server-Tests:
@@ -67,7 +66,7 @@ jobs:
       - name: Code Coverage Summary
         uses: orgoro/coverage@v3
         with:
-          coverageFile: /home/runner/work/azureml-inference-server/azureml-inference-server/src/azureml-inference-server-http/coverage.xml
+          coverageFile: /home/runner/work/azureml-inference-server/azureml-inference-server/coverage.xml
           token: ${{ secrets.GITHUB_TOKEN }}
         if: runner.os == 'Linux' && matrix.python_version == '3.10'
 
