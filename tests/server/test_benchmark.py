@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 from azureml.contrib.services.aml_request import rawhttp
 import flask
 from inference_schema.parameter_types.standard_py_parameter_type import StandardPythonParameterType

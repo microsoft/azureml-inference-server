@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 from azureml.contrib.services.aml_request import AMLRequest, rawhttp 
 from azureml.contrib.services.aml_response import AMLResponse 
 import time, logging, json
