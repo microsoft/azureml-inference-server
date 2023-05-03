@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 import numpy as np
 from azureml_inference_server_http.api.aml_response import AMLResponse
 from inference_schema.schema_decorators import input_schema, output_schema

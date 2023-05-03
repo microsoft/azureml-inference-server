@@ -1,4 +1,4 @@
-# ---------------------------------------------------------
-# Copyright (c) Microsoft Corporation. All rights reserved.
-# ---------------------------------------------------------
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 """Exists only because slim images have deps on this. Overriden by azureml_contrib_services"""

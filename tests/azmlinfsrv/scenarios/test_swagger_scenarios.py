@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 import json
 import pytest
 from .utils import start_server, swagger_with_get, cleanup

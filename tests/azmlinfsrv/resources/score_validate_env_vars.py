@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 import os
 from azureml_inference_server_http.api.aml_response import AMLResponse
 from azureml_inference_server_http.api.aml_request import rawhttp

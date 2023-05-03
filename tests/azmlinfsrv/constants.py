@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 LOG_FILE = ".temp/log.txt"
 DEFAULT_PORT = 5001
 DEFAULT_HEALTH_PORT = 5000

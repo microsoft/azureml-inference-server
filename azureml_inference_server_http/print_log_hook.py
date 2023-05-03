@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 """
 `print_log_hook.py` allows for interception of all calls to `print(...)` and
 forwards the message according to a simple rule set:
