@@ -32,7 +32,7 @@ This is the Flask server or the Sanic server code. The azureml-inference-server-
 
 ## Quick Start
 
-Check out [this document](src\azureml-inference-server-http\CONTRIBUTING.md) to start running our code.
+Check out [this document](CONTRIBUTING.md) to start running our code.
 
 ## Layers
 
@@ -43,7 +43,7 @@ Check out the following documents for detailed information about every layer.
     - [Detailed breakdown of HTTP server](docs/AzureMLInferenceServer)
     - [Logging Summary](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-inference-server-http#understanding-logs)
 - Python Package: azureml-inference-server-http
-  - [How to build and run](src/azureml-inference-server-http/azureml_inference_server_http/CONTRIBUTING.md)
+  - [How to build and run](CONTRIBUTING.md)
 
 
 ## Please contribute!
