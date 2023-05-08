@@ -7,12 +7,10 @@ Check our official documentation `here <https://docs.microsoft.com/en-us/azure/m
 We are currently working on an updated version of this package, if you would like to suggest features or share feedback please fill out this form `here
 <https://forms.office.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbRzjWjI2uwMBOsl7fXFLuCRJUNEc4MFVTVThKRUgxTjNGTTExMVc3M1E1QS4u>`__.
 
-Python 3.6 Deprecation
+Python 3.7 Deprecation
 ======================
 
-- Python 3.6 support on Windows is dropped from `azureml-inference-server-http` v0.4.12 to pick up `waitress v2.1.1 <https://pypi.org/project/waitress/2.1.1/>`__ with the security bugfix of `CVE-2022-24761 <https://nvd.nist.gov/vuln/detail/CVE-2022-24761>`__.
-- Python 3.6 support on Mac, Linux and WSL2 will not be impacted by above change for now.
-- Python 3.6 support on all platforms will be dropped in **December, 2022** (previously: 6/15/2022)
+- Python 3.7 support on all platforms will be dropped in **June, 2023** in line with stated end-of-life as noted in the `python developer guide <https://statics.teams.cdn.office.net/evergreen-assets/safelinks/1/atp-safelinks.html>`__.
 
 CORS support
 =============

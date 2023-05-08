@@ -91,15 +91,14 @@ class UserScript:
 
         # Some Azure SDK generates a proxy script (known as the driver module) to call the actual score script. We
         # can't skip over the driver module because they perform some additional tasks. For example, the Designer
-        # team's driver script generates swagger.json for their users. Here's an example:
-        # https://msdata.visualstudio.com/Vienna/_git/vienna?path=/src/azureml-api/src/Designer/src/DeploymentService/PackageRoot/Data/Resources/driver.py&version=GBmaster&_a=contents
+        # team's driver script generates swagger.json for their users. 
         maybe_user_module = getattr(user_module, "driver_module", None)
         if isinstance(maybe_user_module, ModuleType) and hasattr(maybe_user_module, "run"):
             # The user module is beind a driver module. To the best of my knowledge none of the run() in the driver
             # module has any special logic -- they simply forward the call to the run() of the actual score script. The
             # only problem is that they don't pass the arguments correctly when it is decorated with inference-schema.
             # Until the driver modules are fixed (or, better, removed), we call the run() of the actual score script
-            # directly to lessen the impact. See icm 299826301.
+            # directly to lessen the impact.
             self._user_run = maybe_user_module.run
             logger.info(
                 f"Found driver script at {user_module.__file__} and the score script at {maybe_user_module.__file__}"

@@ -177,9 +177,6 @@ class _SwaggerBuilder:
 @Swagger._register_builder("2", aliases=["2.0"])
 class Swagger2Builder(_SwaggerBuilder):
     def _read_user_swagger(self) -> Optional[dict]:
-        # While the preferred name is `swagger2.json`, we also need to read from `swagger.json` because the driver
-        # script of Designer creates a score script (main.py) that generates `swagger.json` for the user.
-        # https://msdata.visualstudio.com/Vienna/_git/vienna?path=/src/azureml-api/src/Designer/src/DeploymentService/PackageRoot/Data/Resources/driver.py&version=GBmaster&_a=contents
         swagger = super()._read_swagger("swagger.json")
         if swagger:
             return swagger
