@@ -177,7 +177,6 @@ class AppInsightsClient(object):
         # Model information is stored in /var/azureml-app/model_config_map.json in AKS deployments. But, in ACI
         # deployments, that file does not exist due to a bug in container build-out code. Until the bug is fixed
         # /var/azureml-app/azureml-models will be used to enumerate all the models.
-        # Details: https://msdata.visualstudio.com/Vienna/_workitems/edit/511413
         model_ids = []
         try:
             models = [str(model) for model in os.listdir(config.azureml_model_dir)]
