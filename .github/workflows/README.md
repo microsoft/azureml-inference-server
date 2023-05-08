@@ -2,7 +2,7 @@
 
 1. Update [_version.py](https://github.com/microsoft/azureml-inference-server/tree/main/azureml_inference_server_http/_version.py) with a new version number.
 2. In the root folder, run `towncrier --draft` to see what the changelog would look like.
-3. If it looks good, run `towncrier` to commit the changelog to [CHANGELOG.rst](https://github.com/microsoft/azureml-inference-server/tree/main/azureml_inference_server_http/changes/CHANGELOG.rst)
+3. If it looks good, run `towncrier` to commit the changelog to [CHANGELOG.rst](https://github.com/microsoft/azureml-inference-server/tree/main/azureml_inference_server_http/CHANGELOG.rst)
 4. Create a PR with the changes.
 
 ## Build & Release

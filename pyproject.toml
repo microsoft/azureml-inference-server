@@ -20,7 +20,7 @@ markers = [
 [tool.towncrier]
   package = "azureml_inference_server_http"
   package_dir = ""
-  filename = "changes/CHANGELOG.rst"
+  filename = "CHANGELOG.rst"
   directory = "changes/"
   title_format = "{version} ({project_date})"
   template = "changes/_template.rst"
