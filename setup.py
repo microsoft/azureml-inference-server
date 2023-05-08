@@ -24,10 +24,10 @@ def get_version():
 
 
 def get_long_description():
-    with open("README.rst", encoding="utf-8") as fp:
+    with open("changes/README.rst", encoding="utf-8") as fp:
         readme = fp.read()
 
-    with open("CHANGELOG.rst", encoding="utf-8") as fp:
+    with open("changes/CHANGELOG.rst", encoding="utf-8") as fp:
         changelog = fp.read()
 
     return readme + changelog
@@ -61,7 +61,6 @@ setuptools.setup(
     classifiers=[
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
