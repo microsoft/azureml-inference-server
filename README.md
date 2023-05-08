@@ -1,19 +1,5 @@
 # Project
 
-## Contributing
-
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
-
-When you submit a pull request, a CLA bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
-
 ## Trademarks
 
 This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft 
@@ -32,24 +18,24 @@ This is the Flask server or the Sanic server code. The azureml-inference-server-
 
 ## Quick Start
 
-Check out [this document](CONTRIBUTING.md) to start running our code.
+## <a name="virtualenv">Setting your environment</a>
 
-## Layers
+- Clone the [azureml-inference-server](https://github.com/microsoft/azureml-inference-server) repository.
+- Install [Python 3.8](https://www.python.org/downloads/).
+- Install the virtualenv python package with `pip install virtualenv`.
+- Create a new virtual environment with `virtualenv <env name>`, for example `virtualenv amlinf`.
+- Activate the new environment.
+  - In Windows, with `<env name>/scripts/activate`
+  - In Linux, with `. <env name>/bin/activate`
+- Navigate to the root directory.
+- Open a terminal/cmd window and install the package with `pip install -e .[dev]`
+- Verify the command `azmlinfsrv` works.
 
-Check out the following documents for detailed information about every layer.
+## Information
+
+Check out the following documents for detailed information.
 
 - Server code:
   - Information:
     - [Detailed breakdown of HTTP server](docs/AzureMLInferenceServer)
     - [Logging Summary](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-inference-server-http#understanding-logs)
-- Python Package: azureml-inference-server-http
-  - [How to build and run](CONTRIBUTING.md)
-
-
-## Please contribute!
-
-If you see some broken links or incorrect documentation, go ahead and make a PR! If you see some scenarios are undocumented, add a doc to the `/docs` folder or add a `README.md` to the relevant component folder.
-
-Thanks!
-
-
