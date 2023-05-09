@@ -24,7 +24,7 @@ def get_version():
 
 
 def get_long_description():
-    with open("README.rst", encoding="utf-8") as fp:
+    with open("changes/README.rst", encoding="utf-8") as fp:
         readme = fp.read()
 
     with open("CHANGELOG.rst", encoding="utf-8") as fp:
