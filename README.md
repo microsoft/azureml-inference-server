@@ -31,6 +31,8 @@ This is the Flask server or the Sanic server code. The azureml-inference-server-
 - Open a terminal/cmd window and install the package with `pip install -e .[dev]`
 - Verify the command `azmlinfsrv` works.
 
+  [More Information](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-inference-server-http?view=azureml-api-2)
+
 ## Information
 
 Check out the following documents for detailed information.
