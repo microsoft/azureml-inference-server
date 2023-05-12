@@ -11,6 +11,7 @@ import sys
 import json
 
 from azureml_inference_server_http import __version__
+# A test comment to be merged
 
 from .utils import (
     cleanup,
