@@ -156,7 +156,7 @@ class AMLInferenceServerConfig(pydantic.BaseSettings):
         extra = pydantic.Extra.allow
 
         @classmethod
-        def customise_sources(cls, init_settings, env_settings, file_secresettings):
+        def customise_sources(cls, init_settings, env_settings, file_secret_settings):
             # Check if config_file is present
             if get_config_file():
                 return (init_settings, env_settings, config_source_json)
