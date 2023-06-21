@@ -17,6 +17,27 @@ from ..log_config import load_logging_config
 
 logger = logging.getLogger("azmlinfsrv")
 
+alias_mapping = {
+    "AML_APP_ROOT": "app_root",
+    "AZUREML_SOURCE_DIRECTORY": "source_dir",
+    "AZUREML_ENTRY_SCRIPT": "entry_script",
+    "SERVICE_NAME": "service_name",
+    "WORKSPACE_NAME": "workspace_name",
+    "SERVICE_PATH_PREFIX": "service_path_prefix",
+    "SERVICE_VERSION": "service_version",
+    "SCORING_TIMEOUT_MS": "scoring_timeout",
+    "AML_FLASK_ONE_COMPATIBILITY": "flask_one_compatibility",
+    "AZUREML_LOG_LEVEL": "log_level",
+    "AML_APP_INSIGHTS_ENABLED": "app_insights_enabled",
+    "AML_APP_INSIGHTS_KEY": "app_insights_key",
+    "AML_MODEL_DC_STORAGE_ENABLED": "model_dc_storage_enabled",
+    "APP_INSIGHTS_LOG_RESPONSE_ENABLED": "app_insights_log_response_enabled",
+    "AML_CORS_ORIGINS": "cors_origins",
+    "AZUREML_MODEL_DIR": "azureml_model_dir",
+    "HOSTNAME": "hostname",
+    "AZUREML_DEBUG_PORT": "debug_port",
+}
+
 
 def get_config_file() -> str | None:
     # Absolute path to the configuration file
@@ -48,73 +69,74 @@ def _is_valid_config_file(config_file) -> bool:
 def config_source_json(settings: pydantic.BaseSettings) -> Dict[str, Any]:
     config_file = get_config_file()
     with open(config_file, encoding=settings.__config__.env_file_encoding) as fp:
-        return json.load(fp)
+        config_data = {}
+        input_data = json.load(fp)
+        for key in input_data.keys():
+            if key in alias_mapping.keys():
+                config_data[alias_mapping[key]] = input_data[key]
+            else:
+                config_data[key] = input_data[key]
+        return config_data
 
 
 class AMLInferenceServerConfig(pydantic.BaseSettings):
     # Root directory for the app
-    app_root: str = pydantic.Field(default=DEFAULT_APP_ROOT, alias="AML_APP_ROOT")
+    app_root: str = pydantic.Field(default=DEFAULT_APP_ROOT)
 
     # Path to source directory
-    source_dir: Optional[str] = pydantic.Field(
-        default=None, env="AZUREML_SOURCE_DIRECTORY", alias="AZUREML_SOURCE_DIRECTORY"
-    )
+    source_dir: Optional[str] = pydantic.Field(default=None, env="AZUREML_SOURCE_DIRECTORY")
 
     # Path to entry script file
-    entry_script: Optional[str] = pydantic.Field(
-        default=None, env="AZUREML_ENTRY_SCRIPT", alias="AZUREML_ENTRY_SCRIPT"
-    )
+    entry_script: Optional[str] = pydantic.Field(default=None, env="AZUREML_ENTRY_SCRIPT")
 
     # Name of the service (used for Swagger schema generation)
-    service_name: str = pydantic.Field(default="ML service", env="SERVICE_NAME", alias="SERVICE_NAME")
+    service_name: str = pydantic.Field(default="ML service", env="SERVICE_NAME")
 
     # Name of the workspace
-    workspace_name: str = pydantic.Field(default="", env="WORKSPACE_NAME", alias="WORKSPACE_NAME")
+    workspace_name: str = pydantic.Field(default="", env="WORKSPACE_NAME")
 
     # Prefix for the service path (used for Swagger schema generation)
-    service_path_prefix: str = pydantic.Field(default="", env="SERVICE_PATH_PREFIX", alias="SERVICE_PATH_PREFIX")
+    service_path_prefix: str = pydantic.Field(default="", env="SERVICE_PATH_PREFIX")
 
     # Version of the service (used for Swagger schema generation)
-    service_version: str = pydantic.Field(default="1.0", env="SERVICE_VERSION", alias="SERVICE_VERSION")
+    service_version: str = pydantic.Field(default="1.0", env="SERVICE_VERSION")
 
     # Dictates how long scoring function with run before timeout in milliseconds.
-    scoring_timeout: int = pydantic.Field(default=3600 * 1000, env="SCORING_TIMEOUT_MS", alias="SCORING_TIMEOUT_MS")
+    scoring_timeout: int = pydantic.Field(default=3600 * 1000, env="SCORING_TIMEOUT_MS")
 
     # When @rawhttp is used, whether the user requires on `request` object to have the flask v1 properties/behavior.
-    flask_one_compatibility: bool = pydantic.Field(default=True, alias="AML_FLASK_ONE_COMPATIBILITY")
+    flask_one_compatibility: bool = pydantic.Field(default=True)
 
     # Sets the Logging level
-    log_level: str = pydantic.Field(default="INFO", env="AZUREML_LOG_LEVEL", alias="AZUREML_LOG_LEVEL")
+    log_level: str = pydantic.Field(default="INFO", env="AZUREML_LOG_LEVEL")
 
     # Whether to enable AppInsights
-    app_insights_enabled: bool = pydantic.Field(default=False, alias="AML_APP_INSIGHTS_ENABLED")
+    app_insights_enabled: bool = pydantic.Field(default=False)
 
     # Key to user AppInsights
-    app_insights_key: Optional[pydantic.SecretStr] = pydantic.Field(deafult=None, alias="AML_APP_INSIGHTS_KEY")
+    app_insights_key: Optional[pydantic.SecretStr] = pydantic.Field(deafult=None)
 
     # Whether to enable model data collection
-    model_dc_storage_enabled: bool = pydantic.Field(default=False, alias="AML_MODEL_DC_STORAGE_ENABLED")
+    model_dc_storage_enabled: bool = pydantic.Field(default=False)
 
     # Whether to log response to AppInsights
-    app_insights_log_response_enabled: bool = pydantic.Field(
-        default=True, env="APP_INSIGHTS_LOG_RESPONSE_ENABLED", alias="APP_INSIGHTS_LOG_RESPONSE_ENABLED"
-    )
+    app_insights_log_response_enabled: bool = pydantic.Field(default=True, env="APP_INSIGHTS_LOG_RESPONSE_ENABLED")
 
     # Enable CORS for the specified origins
-    cors_origins: Optional[str] = pydantic.Field(default=None, alias="AML_CORS_ORIGINS")
+    cors_origins: Optional[str] = pydantic.Field(default=None)
 
     # Path to model directory
-    azureml_model_dir: str = pydantic.Field(default=None, env="AZUREML_MODEL_DIR", alias="AZUREML_MODEL_DIR")
+    azureml_model_dir: str = pydantic.Field(default=None, env="AZUREML_MODEL_DIR")
 
-    hostname: str = pydantic.Field(default="Unknown", env="HOSTNAME", alias="HOSTNAME")
+    hostname: str = pydantic.Field(default="Unknown", env="HOSTNAME")
 
     # Start the inference server in DEBUGGING mode
-    debug_port: Optional[int] = pydantic.Field(default=None, env="AZUREML_DEBUG_PORT", alias="AZUREML_DEBUG_PORT")
+    debug_port: Optional[int] = pydantic.Field(default=None, env="AZUREML_DEBUG_PORT")
 
     # Check if extra keys are there in the config file
     @pydantic.root_validator(pre=True)
     def check_extra_keys(cls, values: Dict[str, Any]):
-        supported_keys = {field.alias for field in cls.__fields__.values()}
+        supported_keys = alias_mapping.values()
         extra_keys = []
         for field_name in list(values):
             if field_name not in supported_keys:
@@ -134,7 +156,7 @@ class AMLInferenceServerConfig(pydantic.BaseSettings):
         extra = pydantic.Extra.allow
 
         @classmethod
-        def customise_sources(cls, init_settings, env_settings, file_secret_settings):
+        def customise_sources(cls, init_settings, env_settings, file_secresettings):
             # Check if config_file is present
             if get_config_file():
                 return (init_settings, env_settings, config_source_json)
