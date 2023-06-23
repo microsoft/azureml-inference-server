@@ -167,6 +167,9 @@ class AMLInferenceServerConfig(pydantic.BaseSettings):
 def log_config_errors(ex):
     for error in ex.errors():
         field = error["loc"][0]
+        for key in alias_mapping:
+            if alias_mapping[key] == field:
+                field = key
         logger.critical(
             (
                 "\n"

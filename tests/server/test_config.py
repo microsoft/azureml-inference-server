@@ -11,7 +11,7 @@ from azureml_inference_server_http.server.config import AMLInferenceServerConfig
 
 def test_config_errors(caplog):
     with pytest.raises(pydantic.ValidationError) as exc:
-        AMLInferenceServerConfig(SCORING_TIMEOUT_MS="string")
+        AMLInferenceServerConfig(scoring_timeout="string")
     with caplog.at_level(logging.CRITICAL, logger="azmlinfsrv"):
         log_config_errors(exc.value)
     info_tuple = (
