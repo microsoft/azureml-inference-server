@@ -39,5 +39,5 @@ Check out the following documents for detailed information.
 
 - Server code:
   - Information:
-    - [Detailed breakdown of HTTP server](docs/AzureMLInferenceServer)
+    - [Detailed breakdown of HTTP server](docs/AzureMLInferenceServer.md)
     - [Logging Summary](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-inference-server-http#understanding-logs)
