@@ -91,7 +91,7 @@ class UserScript:
 
         # Some Azure SDK generates a proxy script (known as the driver module) to call the actual score script. We
         # can't skip over the driver module because they perform some additional tasks. For example, the Designer
-        # team's driver script generates swagger.json for their users. 
+        # team's driver script generates swagger.json for their users.
         maybe_user_module = getattr(user_module, "driver_module", None)
         if isinstance(maybe_user_module, ModuleType) and hasattr(maybe_user_module, "run"):
             # The user module is beind a driver module. To the best of my knowledge none of the run() in the driver
