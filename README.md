@@ -1,4 +1,4 @@
-# Project
+# AzureML Inference Server
 
 ## Trademarks
 
@@ -10,7 +10,7 @@ Any use of third-party trademarks or logos are subject to those third-party's po
 
 ----
 
-# AzureML Inference Server
+# Summary
 
 The HTTP server is the component that facilitates inferencing to deployed models. Requests made to the HTTP server run user-provided code that interfaces with the user models.
 This server is used with most images in the Azure ML ecosystem, and is considered the primary component of the base image, as it contains the python assets required for inferencing.
