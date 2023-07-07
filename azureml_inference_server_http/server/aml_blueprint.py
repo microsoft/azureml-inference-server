@@ -137,6 +137,7 @@ class AMLInferenceBlueprint(Blueprint):
         self.swagger = Swagger(config.app_root, SERVER_ROOT, self.user_script)
 
         logger.info(f"Scoring timeout is set to {config.scoring_timeout}")
+        logger.info(f"Worker with pid {os.getpid()} ready for serving traffic")
 
     def register(self, *args, **kwargs):
         self.setup()
