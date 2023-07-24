@@ -39,9 +39,9 @@ jobs:
       run: |
         twine upload --repository testpypi --skip-existing --verbose dist/*
 
-    - name: Publish to PyPI
-      env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      run: |
-        twine upload --skip-existing --verbose dist/*
+    # - name: Publish to PyPI
+    #   env:
+    #     TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+    #     TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+    #   run: |
+    #     twine upload --skip-existing --verbose dist/*
