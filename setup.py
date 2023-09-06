@@ -77,7 +77,7 @@ setuptools.setup(
         "flask<2.3.0",  # We aim to be compatible with both flask 1 and 2
         "flask-cors~=3.0.1",
         'gunicorn==20.1.0; platform_system!="Windows"',
-        "inference-schema~=1.5.0",
+        "inference-schema~=1.7.0",
         "opencensus-ext-azure~=1.1.0",
         'psutil<6.0.0; platform_system=="Windows"',
         "pydantic>=1.9,<1.11",
