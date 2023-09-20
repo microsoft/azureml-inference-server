@@ -2,15 +2,9 @@
 Azure Machine Learning Inference HTTP Server (azureml-inference-server-http)
 ============================================================================
 
-Check our official documentation `here <https://docs.microsoft.com/en-us/azure/machine-learning/how-to-inference-server-http>`__.
+Check our official documentation `AzureML Inference Server - Docs <https://docs.microsoft.com/en-us/azure/machine-learning/how-to-inference-server-http>`__.
 
-We are currently working on an updated version of this package, if you would like to suggest features or share feedback please fill out this form `here
-<https://forms.office.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbRzjWjI2uwMBOsl7fXFLuCRJUNEc4MFVTVThKRUgxTjNGTTExMVc3M1E1QS4u>`__.
-
-Python 3.7 Deprecation
-======================
-
-- Python 3.7 support on all platforms will be dropped in **June, 2023** in line with stated end-of-life as noted in the `python developer guide <https://statics.teams.cdn.office.net/evergreen-assets/safelinks/1/atp-safelinks.html>`__.
+Please note, the AzureML Inference Server is now open source! The repo is available here: `AzureML Inference Server - Github <https://github.com/microsoft/azureml-inference-server>`__.
 
 CORS support
 =============
@@ -50,24 +44,47 @@ config.json will be searched in below locations by default if config file is not
 
 Config file will support only below keys:
 
-* AML_APP_ROOT
-* AZUREML_SOURCE_DIRECTORY
-* AZUREML_ENTRY_SCRIPT
-* SERVICE_NAME
-* WORKSPACE_NAME
-* SERVICE_PATH_PREFIX
-* SERVICE_VERSION
-* SCORING_TIMEOUT_MS
-* AML_FLASK_ONE_COMPATIBILITY
-* AZUREML_LOG_LEVEL
-* AML_APP_INSIGHTS_ENABLED
-* AML_APP_INSIGHTS_KEY
-* AML_MODEL_DC_STORAGE_ENABLED
-* APP_INSIGHTS_LOG_RESPONSE_ENABLED
-* AML_CORS_ORIGINS
-* AZUREML_MODEL_DIR
-* HOSTNAME
-* AZUREML_DEBUG_PORT
++-----------------------------------+-----------+-----------------------+
+| Key                               | Required? | Default Value         |
++-----------------------------------+-----------+-----------------------+
+| AML_APP_ROOT                      | Yes       | "/var/azureml-app"    |
++-----------------------------------+-----------+-----------------------+
+| AZUREML_SOURCE_DIRECTORY          | No        |                       |
++-----------------------------------+-----------+-----------------------+
+| AZUREML_ENTRY_SCRIPT              | No        |                       |
++-----------------------------------+-----------+-----------------------+
+| SERVICE_NAME                      | Yes       | "ML service"          |
++-----------------------------------+-----------+-----------------------+
+| WORKSPACE_NAME                    | Yes       |  ""                   |
++-----------------------------------+-----------+-----------------------+
+| SERVICE_PATH_PREFIX               | Yes       |  ""                   |
++-----------------------------------+-----------+-----------------------+
+| SERVICE_VERSION                   | Yes       | "1.0"                 |
++-----------------------------------+-----------+-----------------------+
+| SCORING_TIMEOUT_MS                | Yes       |  3600 * 1000          |
++-----------------------------------+-----------+-----------------------+
+| AML_FLASK_ONE_COMPATIBILITY       | Yes       | "True"                |
++-----------------------------------+-----------+-----------------------+
+| AZUREML_LOG_LEVEL                 | Yes       |  "INFO"               |
++-----------------------------------+-----------+-----------------------+
+| AML_APP_INSIGHTS_ENABLED          | Yes       |  False                |
++-----------------------------------+-----------+-----------------------+
+| AML_APP_INSIGHTS_KEY              | No        | None                  |
++-----------------------------------+-----------+-----------------------+
+| AML_MODEL_DC_STORAGE_ENABLED      | Yes       | False                 |
++-----------------------------------+-----------+-----------------------+
+| APP_INSIGHTS_LOG_RESPONSE_ENABLED | Yes       | "True"                |
++-----------------------------------+-----------+-----------------------+
+| AML_CORS_ORIGINS                  | No        | None                  |
++-----------------------------------+-----------+-----------------------+
+| AZUREML_MODEL_DIR                 | Yes       |  False                |
++-----------------------------------+-----------+-----------------------+
+| HOSTNAME                          | No        | "Unknown"             |
++-----------------------------------+-----------+-----------------------+
+| AZUREML_DEBUG_PORT                | No        | None                  |
++-----------------------------------+-----------+-----------------------+
+
+The code for the config can be found here: `config.py <https://github.com/microsoft/azureml-inference-server/blob/main/azureml_inference_server_http/server/config.py>`__.
 
 Sample config.json:
 
