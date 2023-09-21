@@ -1,0 +1,1 @@
+Deprecate Python 3.7 Support and improve documentation
