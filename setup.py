@@ -38,16 +38,6 @@ def get_license():
         return fp.read()
 
 
-REQUIREMENTS = [
-    "aiohttp~=3.7.4.post0",
-    "aiotask-context~=0.6.1",
-    "grpcio-tools~=1.38.1",
-    "protobuf~=3.20",
-    "sanic~=21.6.0",
-    "sanic-cors~=1.0.1",
-    "tritonclient[all]~=2.11.0",
-]
-
 setuptools.setup(
     name=PACKAGE_NAME,
     version=get_version(),
@@ -61,7 +51,6 @@ setuptools.setup(
     classifiers=[
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
@@ -72,7 +61,7 @@ setuptools.setup(
         "Operating System :: MacOS",
         "Operating System :: POSIX :: Linux",
     ],
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     install_requires=[
         "flask<2.3.0",  # We aim to be compatible with both flask 1 and 2
         "flask-cors~=3.0.1",
@@ -84,8 +73,7 @@ setuptools.setup(
         'waitress==2.1.2; platform_system=="Windows"',
     ],
     extras_require={
-        "dev": REQUIREMENTS
-        + [
+        "dev": [
             "azure-monitor-query",
             "black",
             "coverage==6.2",
@@ -103,11 +91,9 @@ setuptools.setup(
             "pytest-cov",
             "Pillow~=9.0.1",
             "requests",
-            "sanic-testing<=22.6.0",
             "towncrier==21.9.0",
             "wheel",
-        ],
-        "all": REQUIREMENTS,
+        ]
     },
     entry_points={"console_scripts": [f"azmlinfsrv={PACKAGE_DIR}.amlserver:run"]},
     include_package_data=True,

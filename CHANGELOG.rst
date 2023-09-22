@@ -1,3 +1,12 @@
+1.0.0 (2023-09-21)
+~~~~~~~~~~~~~~~~~~
+
+Breaking Changes
+----------------
+
+- Deprecate Python 3.7 Support and improve documentation
+
+
 0.8.4.2 (2023-09-07)
 ~~~~~~~~~~~~~~~~~~~~
 Azureml_Inference_Server_Http 0.8.4.2 (2023-09-07)
