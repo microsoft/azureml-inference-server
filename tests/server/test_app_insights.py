@@ -20,6 +20,7 @@ from azureml_inference_server_http.api.aml_response import AMLResponse
 AML_LOG_ANALYTICS_WORKSPACE_ID = os.environ.get("AML_LOG_ANALYTICS_WORKSPACE_ID", None)
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Default Azure Credential failing to auth in python 3.10 + windows.")
 @pytest.mark.online
 def test_appinsights_e2e(config, app):
     if not AML_LOG_ANALYTICS_WORKSPACE_ID:
