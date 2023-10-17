@@ -63,7 +63,7 @@ setuptools.setup(
     ],
     python_requires=">=3.8",
     install_requires=[
-        "flask<2.3.0",  # We aim to be compatible with both flask 1 and 2
+        "flask<=2.3.2",  # We aim to be compatible with both flask 1 and 2
         "flask-cors~=3.0.1",
         'gunicorn==20.1.0; platform_system!="Windows"',
         "inference-schema~=1.7.0",
