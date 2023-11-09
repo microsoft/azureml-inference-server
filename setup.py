@@ -71,6 +71,7 @@ setuptools.setup(
         'psutil<6.0.0; platform_system=="Windows"',
         "pydantic>=1.9,<1.11",
         'waitress==2.1.2; platform_system=="Windows"',
+        'werkzeug<3.0.0' # Werkzeug 3.x breaks back-compatibility of urls package 
     ],
     extras_require={
         "dev": [
