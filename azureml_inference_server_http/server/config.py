@@ -11,6 +11,7 @@ import traceback
 from typing import Any, Dict, Optional
 
 import pydantic
+from pydantic_settings import BaseSettings, SettingsConfigDict, PydanticBaseSettingsSource
 
 from ..constants import DEFAULT_APP_ROOT, PACKAGE_ROOT
 from ..log_config import load_logging_config
@@ -66,7 +67,7 @@ def _is_valid_config_file(config_file) -> bool:
     return config_file and os.path.exists(config_file) and os.stat(config_file).st_size != 0
 
 
-def config_source_json(settings: pydantic.BaseSettings) -> Dict[str, Any]:
+def config_source_json(settings: BaseSettings) -> Dict[str, Any]:
     config_file = get_config_file()
     with open(config_file, encoding=settings.__config__.env_file_encoding) as fp:
         config_data = {}
@@ -79,7 +80,7 @@ def config_source_json(settings: pydantic.BaseSettings) -> Dict[str, Any]:
         return config_data
 
 
-class AMLInferenceServerConfig(pydantic.BaseSettings):
+class AMLInferenceServerConfig(BaseSettings):
     # Root directory for the app
     app_root: str = pydantic.Field(default=DEFAULT_APP_ROOT)
 
@@ -114,7 +115,7 @@ class AMLInferenceServerConfig(pydantic.BaseSettings):
     app_insights_enabled: bool = pydantic.Field(default=False)
 
     # Key to user AppInsights
-    app_insights_key: Optional[pydantic.SecretStr] = pydantic.Field(deafult=None)
+    app_insights_key: Optional[pydantic.SecretStr] = pydantic.Field(default=None)
 
     # Whether to enable model data collection
     model_dc_storage_enabled: bool = pydantic.Field(default=False)
@@ -126,7 +127,7 @@ class AMLInferenceServerConfig(pydantic.BaseSettings):
     cors_origins: Optional[str] = pydantic.Field(default=None)
 
     # Path to model directory
-    azureml_model_dir: str = pydantic.Field(default=None, env="AZUREML_MODEL_DIR")
+    azureml_model_dir: str = pydantic.Field(default="", env="AZUREML_MODEL_DIR")
 
     hostname: str = pydantic.Field(default="Unknown", env="HOSTNAME")
 
@@ -146,22 +147,22 @@ class AMLInferenceServerConfig(pydantic.BaseSettings):
                 f"Found extra keys in the config file that are not supported by the server.\nExtra keys = {extra_keys}"
             )
         return values
+    
+    # For fields that do not have a value for "env", the environment variable name is built by concatenating this
+    # value with the field name. As an example, the field `app_insights_key` will read its value from the
+    # environment variable `AML_APP_INSIGHTS_KEY`.
+    # Allow other keys in the config.json file
+    model_config = SettingsConfigDict(extra='allow', env_prefix='AML_')
 
-    class Config:
-        # For fields that do not have a value for "env", the environment variable name is built by concatenating this
-        # value with the field name. As an example, the field `app_insights_key` will read its value from the
-        # environment variable `AML_APP_INSIGHTS_KEY`.
-        env_prefix = "AML_"
-        # Allow other keys in the config.json file
-        extra = pydantic.Extra.allow
-
-        @classmethod
-        def customise_sources(cls, init_settings, env_settings, file_secret_settings):
-            # Check if config_file is present
-            if get_config_file():
-                return (init_settings, env_settings, config_source_json)
-            else:
-                return (init_settings, env_settings)
+    @classmethod
+    def settings_customize_sources(cls, init_settings, env_settings, file_secret_settings):
+        # Check if config_file is present
+        if get_config_file():
+            return (init_settings, env_settings, config_source_json)
+        else:
+            return (init_settings, env_settings)
+        
+    
 
 
 def log_config_errors(ex):
