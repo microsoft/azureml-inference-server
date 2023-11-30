@@ -200,7 +200,7 @@ def test_print_run_ok_and_single_print(log_directory):
 
 def test_load_config_from_file(log_directory, tmp_path):
     # Copy config to app root
-    shutil.copy("./resources/config.json", tmp_path / "config.json")
+    shutil.copy("./tests/azmlinfsrv/resources/config.json", tmp_path / "config.json")
 
     server_process = start_server(log_directory, ["--config_file", "./config.json"])
     cleanup(server_process)
