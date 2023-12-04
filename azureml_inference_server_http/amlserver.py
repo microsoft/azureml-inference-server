@@ -81,7 +81,7 @@ def print_warnings():
     print()
     print("Warnings")
     print("---------------")
-    print("Azmlinfsrv will be migrating to Pydantic 2.0 on 1/15/24. This will be a breaking change for any Pydandic 1.0 code.")
+    print("Azmlinfsrv will be migrating to Pydantic 2.0 on 1/15/24. This will be a breaking change for any Pydantic 1.0 code.")
     print()
 
 def set_environment_variables(arg_val, env_var_name, default_val=None):
