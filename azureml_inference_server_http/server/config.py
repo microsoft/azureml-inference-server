@@ -6,15 +6,14 @@ from __future__ import annotations
 import json
 import logging
 import os
-from pathlib import Path
 import sys
 import traceback
 from typing import Any, Dict, Optional, Tuple, Type
 
-from pydantic.fields import FieldInfo
 
 import pydantic
-from pydantic_settings import BaseSettings, SettingsConfigDict, PydanticBaseSettingsSource
+from pydantic.fields import FieldInfo
+from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
 
 from ..constants import DEFAULT_APP_ROOT, PACKAGE_ROOT
 from ..log_config import load_logging_config
@@ -71,30 +70,22 @@ def _is_valid_config_file(config_file) -> bool:
 
 
 class JsonConfigSettingsSource(PydanticBaseSettingsSource):
-    def get_field_value(
-        self, field: FieldInfo, field_name: str
-    ) -> Tuple[Any, str, bool]:
+    def get_field_value(self, field: FieldInfo, field_name: str) -> Tuple[Any, str, bool]:
         config_file = get_config_file()
-        with open(config_file, encoding=self.config.get('env_file_encoding')) as fp:
+        with open(config_file, encoding=self.config.get("env_file_encoding")) as fp:
             file_content_json = json.load(fp)
             field_value = file_content_json.get(field.alias)
             return field_value, field_name, False
 
-    def prepare_field_value(
-        self, field_name: str, field: FieldInfo, value: Any, value_is_complex: bool
-    ) -> Any:
+    def prepare_field_value(self, field_name: str, field: FieldInfo, value: Any, value_is_complex: bool) -> Any:
         return value
 
     def __call__(self) -> Dict[str, Any]:
         d: Dict[str, Any] = {}
 
         for field_name, field in self.settings_cls.model_fields.items():
-            field_value, field_key, value_is_complex = self.get_field_value(
-                field, field_name
-            )
-            field_value = self.prepare_field_value(
-                field_name, field, field_value, value_is_complex
-            )
+            field_value, field_key, value_is_complex = self.get_field_value(field, field_name)
+            field_value = self.prepare_field_value(field_name, field, field_value, value_is_complex)
             if field_value is not None:
                 d[field_key] = field_value
 
@@ -168,12 +159,12 @@ class AMLInferenceServerConfig(BaseSettings):
                 f"Found extra keys in the config file that are not supported by the server.\nExtra keys = {extra_keys}"
             )
         return values
-    
+
     # For fields that do not have a value for "env", the environment variable name is built by concatenating this
     # value with the field name. As an example, the field `app_insights_key` will read its value from the
     # environment variable `AML_APP_INSIGHTS_KEY`.
     # Allow other keys in the config.json file
-    model_config = SettingsConfigDict(extra='allow', env_prefix='AML_', populate_by_name=True)
+    model_config = SettingsConfigDict(extra="allow", env_prefix="AML_", populate_by_name=True)
 
     @classmethod
     def settings_customise_sources(
