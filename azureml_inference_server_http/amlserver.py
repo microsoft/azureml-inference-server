@@ -77,6 +77,12 @@ def print_routes():
     print(f"Score:          POST  127.0.0.1:{os.environ[ENV_PORT]}/score")
     print()
 
+def print_warnings():
+    print()
+    print("Warnings")
+    print("---------------")
+    print("Azmlinfsrv will be migrating to Pydantic 2.0 on 1/15/24. This will be a breaking change for any Pydandic 1.0 code.")
+    print()
 
 def set_environment_variables(arg_val, env_var_name, default_val=None):
     if arg_val is not None:
@@ -191,6 +197,7 @@ def run():
     print_server_settings()
     print_routes()
     print_python_path()
+    print_warnings()
 
     if sys.platform == "win32":
         from azureml_inference_server_http import amlserver_win as srv
