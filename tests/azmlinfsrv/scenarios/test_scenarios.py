@@ -200,7 +200,7 @@ def test_print_run_ok_and_single_print(log_directory):
 
 def test_load_config_from_file(log_directory):
     # Entry script is only provided in config.json
-    server_process = start_server(log_directory, ["--config_file", "./config.json"])
+    server_process = start_server(log_directory, ["--config_file", "./resources/config.json"])
     cleanup(server_process)
 
     assert contains_log_regex(
