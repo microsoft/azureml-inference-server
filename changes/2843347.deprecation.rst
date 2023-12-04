@@ -1,1 +1,1 @@
-Azmlinfsrv will be migrating to Pydantic 2.0 on 1/15/24. This will be a breaking change for any Pydandic 1.0 code.
+Azmlinfsrv will be migrating to Pydantic 2.0 on 1/15/24. This will be a breaking change for any Pydantic 1.0 code.
