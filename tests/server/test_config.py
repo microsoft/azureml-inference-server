@@ -17,7 +17,7 @@ def test_config_errors(caplog):
     info_tuple = (
         "azmlinfsrv",
         logging.CRITICAL,
-        "\n===============Configuration Error=================\nSCORING_TIMEOUT_MS: value is not a valid integer "
+        "\n===============Configuration Error=================\nSCORING_TIMEOUT_MS: Input should be a valid integer, unable to parse string as an integer "
         "(environment variable: SCORING_TIMEOUT_MS)\n============================"
         "=======================",
     )
