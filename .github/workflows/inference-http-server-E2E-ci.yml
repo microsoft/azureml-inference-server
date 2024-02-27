@@ -10,6 +10,12 @@ defaults:
   run:
     shell: bash
 
+permissions:
+  # Required to clone repo & publish test results
+  contents: read
+  checks: write
+  pull-requests: write
+
 jobs:
   azureml-inference-http-server-E2E-CI:
     strategy:
