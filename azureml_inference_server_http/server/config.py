@@ -52,9 +52,11 @@ def get_config_file() -> str | None:
         # User code artifacts
         os.getenv("AML_APP_ROOT", DEFAULT_APP_ROOT),
         # Directory containing the entry script (might be None)
-        os.path.dirname(os.path.abspath(os.environ["AZUREML_ENTRY_SCRIPT"]))
-        if "AZUREML_ENTRY_SCRIPT" in os.environ
-        else None,
+        (
+            os.path.dirname(os.path.abspath(os.environ["AZUREML_ENTRY_SCRIPT"]))
+            if "AZUREML_ENTRY_SCRIPT" in os.environ
+            else None
+        ),
     )
     for root_dir in roots:
         if not root_dir or not os.path.isdir(root_dir):
