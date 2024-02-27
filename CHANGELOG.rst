@@ -1,3 +1,13 @@
+1.1.0 (2024-02-26)
+~~~~~~~~~~~~~~~~~~
+Azureml_Inference_Server_Http 1.1.0 (2024-02-26)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Breaking Changes
+----------------
+
+- Azmlinfsrv will be migrating to Pydantic 2.0 in version 1.1.0. This will be a breaking change for any Pydantic 1.0 code.
+
 1.0.0 (2023-09-21)
 ~~~~~~~~~~~~~~~~~~
 

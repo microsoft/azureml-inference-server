@@ -1,0 +1,7 @@
+{
+    "AZUREML_ENTRY_SCRIPT": "resources/valid_score.py",
+    "AML_CORS_ORIGINS": "www.microsoft.com ",
+    "SCORING_TIMEOUT_MS": 6000,
+    "AML_APP_INSIGHTS_ENABLED": true,
+    "EXTRA_KEY": false
+}

@@ -198,6 +198,22 @@ def test_print_run_ok_and_single_print(log_directory):
     assert req.ok
 
 
+def test_load_config_from_file(log_directory):
+    # Entry script is only provided in config.json
+    server_process = start_server(log_directory, ["--config_file", "./resources/config.json"])
+    cleanup(server_process)
+
+    assert contains_log_regex(
+        log_directory,
+        STDOUT_FILE_PATH,
+        rf"[INFO] \[\d+\] azmlinfsrv {DATE_TIME_REGEX} | Starting up app insights client",
+    )
+
+    assert contains_log(
+        log_directory, STDOUT_FILE_PATH, "azmlinfsrv.user_script - Users's init has completed successfully"
+    )
+
+
 def test_log_configurability(log_directory, tmp_path):
     # The server should load the config from the app dir
     env = {"AML_APP_ROOT": str(tmp_path.absolute())}
