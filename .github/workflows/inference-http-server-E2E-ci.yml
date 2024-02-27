@@ -10,6 +10,11 @@ defaults:
   run:
     shell: bash
 
+permissions:
+  # Required to clone repo
+  contents: write
+
+
 jobs:
   azureml-inference-http-server-E2E-CI:
     strategy:
