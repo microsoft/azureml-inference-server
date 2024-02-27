@@ -14,6 +14,7 @@ permissions:
   # Required to clone repo & publish test results
   contents: read
   checks: write
+  issues: write
 
 jobs:
   azureml-inference-http-server-E2E-CI:
