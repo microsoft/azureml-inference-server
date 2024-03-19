@@ -79,7 +79,7 @@ setuptools.setup(
         "dev": [
             "azure-monitor-query",
             "black",
-            "coverage==6.2",
+            "coverage",
             "debugpy",
             "flake8",
             "flake8-comprehensions",
