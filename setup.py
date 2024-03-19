@@ -92,7 +92,7 @@ setuptools.setup(
             "pytest-asyncio",
             "pytest-benchmark",
             "pytest-cov",
-            "Pillow~=9.0.1",
+            #"Pillow~=9.0.1",
             "requests",
             "towncrier==21.9.0",
             "wheel",
