@@ -71,6 +71,7 @@ setuptools.setup(
         "inference-schema",
         "opencensus-ext-azure~=1.1.0",
         'psutil<6.0.0; platform_system=="Windows"',
+        'bump-pydantic'
         "pydantic",
         "pydantic-settings",
         'waitress==2.1.2; platform_system=="Windows"',
