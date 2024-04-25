@@ -71,7 +71,7 @@ setuptools.setup(
         "inference-schema",
         "opencensus-ext-azure~=1.1.0",
         'psutil<6.0.0; platform_system=="Windows"',
-        "pydantic~=2.0",
+        "pydantic",
         "pydantic-settings",
         'waitress==2.1.2; platform_system=="Windows"',
         "werkzeug<3.0.0",  # Werkzeug 3.x breaks back-compatibility of urls package
