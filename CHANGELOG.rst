@@ -13,6 +13,8 @@ Enhancements
 Azureml_Inference_Server_Http 1.1.0 (2024-02-26)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Add Python 3.12 support
+
 Breaking Changes
 ----------------
 

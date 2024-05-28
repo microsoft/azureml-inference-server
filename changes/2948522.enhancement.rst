@@ -1,1 +1,2 @@
 Add python 3.11 support
+Add python 3.12 support
