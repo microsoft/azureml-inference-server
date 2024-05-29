@@ -74,7 +74,7 @@ setuptools.setup(
         "pydantic~=2.7.1",
         "pydantic-settings",
         'waitress==2.1.2; platform_system=="Windows"',
-        "werkzeug>=3.0.3",  # Werkzeug 3.x breaks back-compatibility of urls package
+        "werkzeug<3.0.0",  # Werkzeug 3.x breaks back-compatibility of urls package
     ],
     extras_require={
         "dev": [

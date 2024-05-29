@@ -1,21 +1,3 @@
-1.2.2 (2024-05-14)
-~~~~~~~~~~~~~~~~~~
-
-Enhancements
-------------
-
-- Update Werkzeug from <3.0.0 to >=3.0.3
-
-
-1.2.1 (2024-04-25)
-~~~~~~~~~~~~~~~~~~
-
-Enhancements
-------------
-
-- Update gunicorn from 20.1.0 to 22.0.0
-
-
 1.2.0 (2024-04-02)
 ~~~~~~~~~~~~~~~~~~
 Azureml_Inference_Server_Http 1.2.0 (2024-04-02)
