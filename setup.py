@@ -55,6 +55,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "License :: Other/Proprietary License",
@@ -67,10 +68,10 @@ setuptools.setup(
         "flask<=2.3.2",  # We aim to be compatible with both flask 1 and 2
         "flask-cors~=3.0.1",
         'gunicorn==22.0.0; platform_system!="Windows"',
-        "inference-schema~=1.7.0",
+        "inference-schema~=1.8.0",
         "opencensus-ext-azure~=1.1.0",
         'psutil<6.0.0; platform_system=="Windows"',
-        "pydantic~=2.0",
+        "pydantic~=2.7.1",
         "pydantic-settings",
         'waitress==2.1.2; platform_system=="Windows"',
         "werkzeug>=3.0.3",  # Werkzeug 3.x breaks back-compatibility of urls package
