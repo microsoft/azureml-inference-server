@@ -8,13 +8,9 @@ from typing import Any, Callable, ClassVar, Dict, Iterable, List, Optional, Set,
 
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any
+# from .models import GenericInputSchema,GenericOutputSchema
 
-class GenericInputSchema(BaseModel):
-    features: List[Dict[str, Any]]
-
-class GenericOutputSchema(BaseModel):
-    predictions: List[Dict[str, Any]]
-
+from azureml_inference_server_http.api.models import GenericInputSchema,GenericOutputSchema
 
 from .config import config
 from .exceptions import AzmlAssertionError
