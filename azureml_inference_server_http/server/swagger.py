@@ -5,14 +5,11 @@ import json
 import logging
 import os
 from typing import Any, Callable, ClassVar, Dict, Iterable, List, Optional, Set, Type, TypeVar
-
+from pydantic import BaseModel
+from azureml_inference_server_http.api.models import GenericInputSchema, GenericOutputSchema
 from .config import config
 from .exceptions import AzmlAssertionError
 from .user_script import UserScript
-from pydantic import BaseModel, Field
-from typing import List, Dict, Any
-
-from azureml_inference_server_http.api.models import GenericInputSchema,GenericOutputSchema
 
 logger = logging.getLogger("azmlinfsrv.swagger")
 

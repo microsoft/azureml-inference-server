@@ -12,7 +12,7 @@ import azureml_inference_server_http.server
 from azureml_inference_server_http.server.config import config
 from azureml_inference_server_http.server.swagger import Swagger
 from azureml_inference_server_http.server.user_script import TimedResult, UserScript
-from azureml_inference_server_http.api.models import GenericInputSchema,GenericOutputSchema
+from azureml_inference_server_http.api.models import GenericInputSchema, GenericOutputSchema
 
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
