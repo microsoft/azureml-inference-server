@@ -8,8 +8,8 @@ from types import ModuleType
 from typing import Any, Callable, Dict, NamedTuple, Optional
 
 import flask
-from inference_schema.schema_util import is_schema_decorated
-
+# from inference_schema.schema_util import is_schema_decorated
+from pydantic import BaseModel, ValidationError
 from .exceptions import AzmlinfsrvError
 from .input_parsers import InputParserBase, JsonStringInput, ObjectInput, RawRequestInput
 from .utils import timeout, Timer
@@ -163,20 +163,22 @@ class UserScript:
                 raise UserScriptError("run() needs to accept an argument for input data.")
 
         # Decide the input parser we need for user's run() function.
-        if aml_request._rawHttpRequested and is_schema_decorated(self._user_run):
-            raise UserScriptError("run() cannot be decorated with both @rawhttp and @input_schema")
-        elif aml_request._rawHttpRequested:
-            self.input_parser = RawRequestInput(first_param.name)
-            logger.info("run() is decorated with @rawhttp. Server will invoke it with the flask request object.")
-        elif is_schema_decorated(self._user_run):
-            self.input_parser = ObjectInput(run_params)
-            logger.info(
-                "run() is decorated with @input_schema. Server will invoke it with the following arguments: "
-                f"{', '.join(param.name for param in run_params)}."
-            )
-        else:
-            self.input_parser = JsonStringInput(first_param.name)
-            logger.info("run() is not decorated. Server will invoke it with the input in JSON string.")
-
+        # if aml_request._rawHttpRequested and is_schema_decorated(self._user_run):
+        #     raise UserScriptError("run() cannot be decorated with both @rawhttp and @input_schema")
+        # elif aml_request._rawHttpRequested:
+        #     self.input_parser = RawRequestInput(first_param.name)
+        #     logger.info("run() is decorated with @rawhttp. Server will invoke it with the flask request object.")
+        # elif is_schema_decorated(self._user_run):
+        #     self.input_parser = ObjectInput(run_params)
+        #     logger.info(
+        #         "run() is decorated with @input_schema. Server will invoke it with the following arguments: "
+        #         f"{', '.join(param.name for param in run_params)}."
+        #     )
+        # else:
+        #     self.input_parser = JsonStringInput(first_param.name)
+        #     logger.info("run() is not decorated. Server will invoke it with the input in JSON string.")
+        self.input_parser = JsonStringInput(first_param.name)
+        logger.info("run() is not decorated. Server will invoke it with the input in JSON string.")
+        
     def get_run_function(self) -> Callable:
         return self._user_run

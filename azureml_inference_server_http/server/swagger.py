@@ -6,12 +6,15 @@ import logging
 import os
 from typing import Any, Callable, ClassVar, Dict, Iterable, List, Optional, Set, Type, TypeVar
 
-from inference_schema.schema_util import (
-    get_input_schema,
-    get_output_schema,
-    get_supported_versions,
-    is_schema_decorated,
-)
+from pydantic import BaseModel, Field
+from typing import List, Dict, Any
+
+class GenericInputSchema(BaseModel):
+    features: List[Dict[str, Any]]
+
+class GenericOutputSchema(BaseModel):
+    predictions: List[Dict[str, Any]]
+
 
 from .config import config
 from .exceptions import AzmlAssertionError
@@ -146,16 +149,12 @@ class _SwaggerBuilder:
         run_function = self.user_script.get_run_function()
 
         # If request swagger version not supported, this will remain None
-        if all(version not in get_supported_versions(run_function) for version in self.__version_aliases__):
-            return None
+        # if all(version not in get_supported_versions(run_function) for version in self.__version_aliases__):
+        #     return None
 
-        if is_schema_decorated(run_function):
-            # run() is decorated. Get the input and output schema from inference-schema.
-            input_schema = get_input_schema(run_function)
-            output_schema = get_output_schema(run_function)
-        else:
-            # run() is not decorated. Set input and output schemas to empty objects.
-            input_schema = output_schema = {"type": "object", "example": {}}
+
+        input_schema = GenericInputSchema.model_json_schema()
+        output_schema = GenericOutputSchema.model_json_schema()
         template_path = os.path.join(self.server_root, self.swagger_template)
         with open(template_path, "r", encoding="utf-8") as f:
             swagger_spec_str = f.read()
