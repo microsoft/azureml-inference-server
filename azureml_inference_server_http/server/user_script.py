@@ -1,6 +1,3 @@
-# Copyright (c) Microsoft Corporation.
-# Licensed under the MIT License.
-
 import inspect
 import logging
 import os
@@ -8,7 +5,7 @@ from types import ModuleType
 from typing import Any, Callable, Dict, NamedTuple, Optional
 
 import flask
-from inference_schema.schema_util import is_schema_decorated
+from pydantic import BaseModel, ValidationError
 
 from .exceptions import AzmlinfsrvError
 from .input_parsers import InputParserBase, JsonStringInput, ObjectInput, RawRequestInput
@@ -21,25 +18,20 @@ from ..api import aml_request
 # Note that this is not the actual root logger (prior to Python 3.9)
 logger = logging.getLogger("azmlinfsrv.user_script")
 
-
 class UserScriptError(AzmlinfsrvError):
     pass
-
 
 class UserScriptException(UserScriptError):
     """User script threw an exception."""
 
     def __init__(self, ex: BaseException, message: Optional[str] = None):
         self.user_ex = ex
-
         message = message or "Caught an unhandled exception from the user script"
         super().__init__(message)
-
 
 class UserScriptImportException(UserScriptException):
     def __init__(self, ex: BaseException):
         super().__init__(ex, "Failed to import user script because it raised an unhandled exception")
-
 
 class UserScriptTimeout(UserScriptError):
     def __init__(self, timeout_ms: float, elapsed_ms: float):
@@ -47,12 +39,10 @@ class UserScriptTimeout(UserScriptError):
         self.timeout_ms = timeout_ms
         self.elapsed_ms = elapsed_ms
 
-
 class TimedResult(NamedTuple):
     elapsed_ms: float
     input: Dict[str, Any]
     output: Any
-
 
 class UserScript:
     input_parser: InputParserBase
@@ -110,7 +100,6 @@ class UserScript:
 
         # Driver modules usually add special logic into init(), so we don't want to skip over it like we do with run().
         self._user_init = user_module.init
-
         self._analyze_run()
 
     def invoke_init(self) -> None:
@@ -123,16 +112,18 @@ class UserScript:
         logger.info("Users's init has completed successfully")
 
     def invoke_run(self, request: flask.Request, *, timeout_ms: int) -> TimedResult:
-        run_parameters = self.input_parser(request)
+        try:
+            run_parameters = self.input_parser(request)
+            # Validate and parse input data using Pydantic
+            input_data = GenericInputSchema(**run_parameters)
+        except ValidationError as e:
+            raise UserScriptError(f"Input validation error: {e}")
 
-        # Invoke the user's code with a timeout and a timer.
         timer = None
         try:
             with timeout(timeout_ms), Timer() as timer:
-                run_output = self._wrapped_user_run(**run_parameters, request_headers=dict(request.headers))
+                run_output = self._wrapped_user_run(**input_data.dict(), request_headers=dict(request.headers))
         except TimeoutError:
-            # timer may be unset if timeout() threw TimeoutError before Timer() is called. Should probably not happen
-            # but not impossible.
             elapsed_ms = timer.elapsed_ms if timer else 0
             raise UserScriptTimeout(timeout_ms, elapsed_ms) from None
         except Exception as ex:
@@ -163,20 +154,22 @@ class UserScript:
                 raise UserScriptError("run() needs to accept an argument for input data.")
 
         # Decide the input parser we need for user's run() function.
-        if aml_request._rawHttpRequested and is_schema_decorated(self._user_run):
-            raise UserScriptError("run() cannot be decorated with both @rawhttp and @input_schema")
-        elif aml_request._rawHttpRequested:
-            self.input_parser = RawRequestInput(first_param.name)
-            logger.info("run() is decorated with @rawhttp. Server will invoke it with the flask request object.")
-        elif is_schema_decorated(self._user_run):
-            self.input_parser = ObjectInput(run_params)
-            logger.info(
-                "run() is decorated with @input_schema. Server will invoke it with the following arguments: "
-                f"{', '.join(param.name for param in run_params)}."
-            )
-        else:
-            self.input_parser = JsonStringInput(first_param.name)
-            logger.info("run() is not decorated. Server will invoke it with the input in JSON string.")
+        # if aml_request._rawHttpRequested and is_schema_decorated(self._user_run):
+        #     raise UserScriptError("run() cannot be decorated with both @rawhttp and @input_schema")
+        # elif aml_request._rawHttpRequested:
+        #     self.input_parser = RawRequestInput(first_param.name)
+        #     logger.info("run() is decorated with @rawhttp. Server will invoke it with the flask request object.")
+        # elif is_schema_decorated(self._user_run):
+        #     self.input_parser = ObjectInput(run_params)
+        #     logger.info(
+        #         "run() is decorated with @input_schema. Server will invoke it with the following arguments: "
+        #         f"{', '.join(param.name for param in run_params)}."
+        #     )
+        # else:
+        #     self.input_parser = JsonStringInput(first_param.name)
+        #     logger.info("run() is not decorated. Server will invoke it with the input in JSON string.")
+        self.input_parser = JsonStringInput(first_param.name)
+        logger.info("run() is not decorated. Server will invoke it with the input in JSON string.")
 
     def get_run_function(self) -> Callable:
         return self._user_run
