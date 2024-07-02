@@ -1,5 +1,3 @@
-# Copyright (c) Microsoft Corporation.
-# Licensed under the MIT License.
 
 from contextlib import contextmanager
 import os
@@ -7,7 +5,6 @@ from typing import Any, Dict, Optional, TypeVar
 
 import flask
 import flask.testing
-import inference_schema.schema_util
 import werkzeug.test
 import wrapt
 
@@ -15,6 +12,7 @@ import azureml_inference_server_http.server
 from azureml_inference_server_http.server.config import config
 from azureml_inference_server_http.server.swagger import Swagger
 from azureml_inference_server_http.server.user_script import TimedResult, UserScript
+from azureml_inference_server_http.api.models import GenericInputSchema,GenericOutputSchema
 
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
@@ -66,9 +64,6 @@ class TestingApp(wrapt.ObjectProxy):
         server_root = os.path.dirname(azureml_inference_server_http.server.__file__)
         self.azml_blueprint.swagger = Swagger(app_root, server_root, self.user_script)
 
-        # Reset __version__ in inference-schema after the swagger is generated.
-        inference_schema.schema_util.__versions__.clear()
-
 
 class TestingClient(flask.testing.FlaskClient):
     def get_health(self, **kwargs) -> werkzeug.test.TestResponse:
@@ -114,7 +109,6 @@ class TestingUserScript(UserScript):
         from azureml_inference_server_http.api import aml_request
 
         aml_request._rawHttpRequested = False
-        inference_schema.schema_util.__functions_schema__.clear()
 
     def reset_user_module(self) -> None:
         self._user_init = lambda: None

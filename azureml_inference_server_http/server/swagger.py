@@ -6,29 +6,23 @@ import logging
 import os
 from typing import Any, Callable, ClassVar, Dict, Iterable, List, Optional, Set, Type, TypeVar
 
-from pydantic import BaseModel, Field
-from typing import List, Dict, Any
-# from .models import GenericInputSchema,GenericOutputSchema
-
-from azureml_inference_server_http.api.models import GenericInputSchema,GenericOutputSchema
-
 from .config import config
 from .exceptions import AzmlAssertionError
 from .user_script import UserScript
+from pydantic import BaseModel, Field
+from typing import List, Dict, Any
 
+from azureml_inference_server_http.api.models import GenericInputSchema,GenericOutputSchema
 
 logger = logging.getLogger("azmlinfsrv.swagger")
 
 _SwaggerBuilderTypeT = TypeVar("_SwaggerBuilderTypeT", bound="Type[_SwaggerBuilder]")
 
-
 class SwaggerException(Exception):
     """Swagger generation threw an exception."""
-
     def __init__(self, message: str):
         super().__init__(message)
         self.message = message
-
 
 class Swagger:
     _builder_classes: ClassVar[List[Type["_SwaggerBuilder"]]] = []
@@ -52,14 +46,11 @@ class Swagger:
             if swagger_json is not None:
                 for version in builder.__version_aliases__:
                     self.swagger_jsons[version] = swagger_json
-
                 self.supported_versions.append(builder_cls.__version__)
             else:
                 unsupported_versions.append(builder_cls.__version__)
-
         self.supported_versions.sort()
         unsupported_versions.sort()
-
         if self.supported_versions and unsupported_versions:
             logger.info(
                 f"Swaggers are prepared for versions [{', '.join(self.supported_versions)}] "
@@ -80,7 +71,6 @@ class Swagger:
             cls._builder_classes.append(builder_cls)
             cls._valid_versions.update(builder_cls.__version_aliases__)
             return builder_cls
-
         return register
 
     def get_swagger(self, swagger_version: str) -> dict:
@@ -89,7 +79,6 @@ class Swagger:
                 f"Swagger version [{swagger_version}] is not valid. "
                 f"Supported versions: [{', '.join(sorted(self.supported_versions))}]."
             )
-
         swagger = self.swagger_jsons.get(swagger_version)
         if not swagger:
             raise SwaggerException(
@@ -115,8 +104,8 @@ class _SwaggerBuilder:
         self.user_script = user_script
 
     def _update_definitions(
-        self, swagger_spec: dict, input_schema: Any, output_schema: Any
-    ) -> None:  # pragma: no cover
+        self, swagger_spec: dict, input_schema: BaseModel, output_schema: BaseModel
+    ) -> None:
         raise AzmlAssertionError("_update_definitions method is not overridden")
 
     def get_swagger(self) -> Optional[dict]:
