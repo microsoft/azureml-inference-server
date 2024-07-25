@@ -75,7 +75,7 @@ setuptools.setup(
         "pydantic-settings",
         'waitress==2.1.2; platform_system=="Windows"',
         "werkzeug>=3.0.3",  # Werkzeug 3.x breaks back-compatibility of urls package
-        "certifi>=2024.7.4" # Python (Pip) Security Update for certifi (GHSA-248v-346w-9cwc)
+        "certifi>=2024.7.4"  # Python (Pip) Security Update for certifi (GHSA-248v-346w-9cwc)
     ],
     extras_require={
         "dev": [
