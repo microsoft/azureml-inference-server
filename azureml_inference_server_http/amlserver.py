@@ -78,8 +78,6 @@ def print_routes():
     print()
 
 
-
-
 def set_environment_variables(arg_val, env_var_name, default_val=None):
     if arg_val is not None:
         os.environ[env_var_name] = str(arg_val)
