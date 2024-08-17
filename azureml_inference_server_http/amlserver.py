@@ -78,16 +78,6 @@ def print_routes():
     print()
 
 
-def print_warnings():
-    print()
-    print("Warnings")
-    print("---------------")
-    print(
-        "Azmlinfsrv will be migrating to Pydantic 2.0 on 1/15/24. This is a breaking change for any Pydantic 1.0 code."
-    )
-    print()
-
-
 def set_environment_variables(arg_val, env_var_name, default_val=None):
     if arg_val is not None:
         os.environ[env_var_name] = str(arg_val)
@@ -201,7 +191,6 @@ def run():
     print_server_settings()
     print_routes()
     print_python_path()
-    print_warnings()
 
     if sys.platform == "win32":
         from azureml_inference_server_http import amlserver_win as srv
