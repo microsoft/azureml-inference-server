@@ -66,7 +66,7 @@ setuptools.setup(
     python_requires=">=3.8",
     install_requires=[
         "flask<=2.3.2",  # We aim to be compatible with both flask 1 and 2
-        "flask-cors~=4.0.1",
+        "flask-cors~=5.0.0",
         'gunicorn==22.0.0; platform_system!="Windows"',
         "inference-schema~=1.8.0",
         "opencensus-ext-azure~=1.1.0",
