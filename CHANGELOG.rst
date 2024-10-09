@@ -1,3 +1,8 @@
+1.3.3 (2024-10-08)
+~~~~~~~~~~~~~~~~~~
+
+Upgraded flask-cors version to 5.0.0
+
 1.3.2 (2024-08-19)
 ~~~~~~~~~~~~~~~~~~
 
@@ -11,7 +16,7 @@ Upgraded certifi version to 2024.7.4.
 
 1.3.0 (2024-05-30)
 ~~~~~~~~~~~~~~~~~~
-Azureml_Inference_Server_Http 1.2.0 (2024-05-30)
+Azureml_Inference_Server_Http 1.3.0 (2024-05-30)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Enhancements
