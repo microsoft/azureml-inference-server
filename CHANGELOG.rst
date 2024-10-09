@@ -16,7 +16,7 @@ Upgraded certifi version to 2024.7.4.
 
 1.3.0 (2024-05-30)
 ~~~~~~~~~~~~~~~~~~
-Azureml_Inference_Server_Http 1.2.0 (2024-05-30)
+Azureml_Inference_Server_Http 1.3.0 (2024-05-30)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Enhancements
