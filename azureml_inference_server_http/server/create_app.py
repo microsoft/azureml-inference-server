@@ -5,7 +5,6 @@ import importlib
 import logging
 
 from flask import Flask
-import werkzeug.datastructures
 from werkzeug.exceptions import HTTPException
 
 from azureml_inference_server_http.api.aml_response import AMLResponse
