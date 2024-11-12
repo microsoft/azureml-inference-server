@@ -13,6 +13,7 @@ from . import routes
 
 logger = logging.getLogger("azmlinfsrv")
 
+
 def create():
     app = Flask(__name__)
     # To create a new instance of main_blueprint each time the create() is called
