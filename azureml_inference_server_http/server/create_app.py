@@ -1,22 +1,15 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-from distutils.version import LooseVersion
-import functools
 import importlib
 import logging
-import traceback
-import warnings
 
-import flask
 from flask import Flask
-import werkzeug
 import werkzeug.datastructures
 from werkzeug.exceptions import HTTPException
 
 from azureml_inference_server_http.api.aml_response import AMLResponse
 from . import routes
-from .config import config
 
 logger = logging.getLogger("azmlinfsrv")
 
