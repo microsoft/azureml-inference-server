@@ -38,9 +38,9 @@ def run(input_data):
         }
 
         r['pid'] = os.getpid()
-        if input_data.headers.has_key('sleep-in-sec'):
-            print(f'sleep-in-sec: {input_data.headers["sleep-in-sec"]}')
-            time.sleep(float(input_data.headers['sleep-in-sec']))
+        if 'sleep-in-sec' in r['received_headers']:
+            print(f'sleep-in-sec: {r['received_headers']['sleep-in-sec']}')
+            time.sleep(float(r['received_headers']['sleep-in-sec']))
 
         run_time = time.time() - start_time
         return AMLResponse(r, 200, {"pid": str(os.getpid()), "x-ms-run-function-duration": str(run_time)}, json_str=True)
