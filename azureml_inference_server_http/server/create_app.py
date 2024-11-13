@@ -17,6 +17,7 @@ from werkzeug.exceptions import HTTPException
 from azureml_inference_server_http.api.aml_response import AMLResponse
 from . import routes
 from .config import config
+import importlib.metadata
 
 logger = logging.getLogger("azmlinfsrv")
 
@@ -30,7 +31,8 @@ def patch_flask():
             category=DeprecationWarning,
             message="distutils Version classes are deprecated.",
         )
-        patch_werkzeug = LooseVersion(werkzeug.__version__) >= LooseVersion("2.1")
+        logger.info(importlib.metadata.version("werkzeug"))
+        patch_werkzeug = LooseVersion(importlib.metadata.version("werkzeug")) >= LooseVersion("2.1")
 
     if patch_werkzeug:
         # Request.headers.has_key() was removed in werkzeug 2.1
