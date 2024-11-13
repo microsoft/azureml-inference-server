@@ -30,9 +30,7 @@ def patch_flask():
             category=DeprecationWarning,
             message="distutils Version classes are deprecated.",
         )
-        patch_werkzeug = LooseVersion(werkzeug.__version__) >= LooseVersion("2.1")
 
-    if patch_werkzeug:
         # Request.headers.has_key() was removed in werkzeug 2.1
         # https://github.com/pallets/werkzeug/commit/03979aaff2b8020fd6fd52e69745950d484e3fa5
         # Restore the functionality to preserve backwards compatability.
@@ -49,8 +47,6 @@ def patch_flask():
 
         flask.Request.on_json_loading_failed = on_json_loading_failed
         logger.info("AML_FLASK_ONE_COMPATIBILITY is set. Patched Flask to ensure compatibility with Flask 1.")
-    else:
-        logger.info("AML_FLASK_ONE_COMPATIBILITY is set, but patching is not necessary.")
 
 
 if config.flask_one_compatibility:
