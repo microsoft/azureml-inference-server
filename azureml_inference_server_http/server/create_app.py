@@ -31,8 +31,8 @@ def patch_flask():
             category=DeprecationWarning,
             message="distutils Version classes are deprecated.",
         )
-        logger.info(importlib.metadata.version('werkzeug'))
-        patch_werkzeug = LooseVersion(importlib.metadata.version('werkzeug')) >= LooseVersion("2.1")
+        logger.info(importlib.metadata.version("werkzeug"))
+        patch_werkzeug = LooseVersion(importlib.metadata.version("werkzeug")) >= LooseVersion("2.1")
 
     if patch_werkzeug:
         # Request.headers.has_key() was removed in werkzeug 2.1
