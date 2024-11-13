@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-from distutils.version import LooseVersion
 import functools
 import importlib
 import logging
