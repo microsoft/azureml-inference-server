@@ -21,7 +21,7 @@ jobs:
   azureml-inference-http-server-E2E-CI:
     strategy:
       matrix:
-        python_version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        python_version: ['3.9', '3.10', '3.11', '3.12']
         pool_vmImage: ['ubuntu-latest', 'windows-latest']
     runs-on: ${{matrix.pool_vmImage}}
     environment: Server-CI

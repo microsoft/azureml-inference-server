@@ -247,7 +247,6 @@ Config file will support only below keys:
 | SERVICE_PATH_PREFIX    | No  | "" |
 | SERVICE_VERSION  | No| "1.0"  |
 | SCORING_TIMEOUT_MS | No  | 3600 * 1000  |
-| AML_FLASK_ONE_COMPATIBILITY  | No  | "True"  |
 | AZUREML_LOG_LEVEL    | No  | "INFO" |
 | AML_APP_INSIGHTS_ENABLED  | No | False |
 | AML_APP_INSIGHTS_KEY | No  | None  |

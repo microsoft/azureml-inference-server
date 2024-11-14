@@ -29,7 +29,6 @@ alias_mapping = {
     "SERVICE_PATH_PREFIX": "service_path_prefix",
     "SERVICE_VERSION": "service_version",
     "SCORING_TIMEOUT_MS": "scoring_timeout",
-    "AML_FLASK_ONE_COMPATIBILITY": "flask_one_compatibility",
     "AZUREML_LOG_LEVEL": "log_level",
     "AML_APP_INSIGHTS_ENABLED": "app_insights_enabled",
     "AML_APP_INSIGHTS_KEY": "app_insights_key",
@@ -119,9 +118,6 @@ class AMLInferenceServerConfig(BaseSettings):
     # Dictates how long scoring function with run before timeout in milliseconds.
     scoring_timeout: int = pydantic.Field(default=3600 * 1000, alias="SCORING_TIMEOUT_MS")
 
-    # When @rawhttp is used, whether the user requires on `request` object to have the flask v1 properties/behavior.
-    flask_one_compatibility: bool = pydantic.Field(default=True)
-
     # Sets the Logging level
     log_level: str = pydantic.Field(default="INFO", alias="AZUREML_LOG_LEVEL")
 
@@ -132,7 +128,7 @@ class AMLInferenceServerConfig(BaseSettings):
     app_insights_key: Optional[pydantic.SecretStr] = pydantic.Field(default=None)
 
     # Whether to enable model data collection
-    model_dc_storage_enabled: bool = pydantic.Field(default=False)
+    mdc_storage_enabled: bool = pydantic.Field(default=False)
 
     # Whether to log response to AppInsights
     app_insights_log_response_enabled: bool = pydantic.Field(default=True, alias="APP_INSIGHTS_LOG_RESPONSE_ENABLED")

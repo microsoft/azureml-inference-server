@@ -57,7 +57,7 @@ def app_cors(config):
 @pytest.fixture()
 def app_appinsights(config):
     config.app_insights_enabled = True
-    config.model_dc_storage_enabled = True
+    config.mdc_storage_enabled = True
     config.app_insights_key = pydantic.SecretStr(str(uuid.uuid4()))
     return create_app()
 
