@@ -1,3 +1,31 @@
+1.4.0 (2024-11-13)
+~~~~~~~~~~~~~~~~~~
+Azureml_Inference_Server_Http 1.4.0 (2024-11-13)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Deprecation
+-----------
+
+- Python 3.8 has reached the end-of-maintenance update support. The lifespan notification can be found 
+  at https://peps.python.org/pep-0569/#lifespan. The Azureml_Inference_Server_Http dropped the support of Python 3.8
+  to avoid patching unsupported Python 3.8 packages.
+
+- Deprecated the previous added support for Flask 2.0. A compatibility layer was introduced to ensure the flask 2.0 upgrade
+  doesn't break the users who use ``@rawhttp`` as the methods on the Flask request object. Specifically,
+
+  * ``request.headers.has_keys()`` was removed
+  * ``request.json`` throws an exception if the content-type is not "application/json". Previously it returns ``None``.
+
+  The compatibility layer which restored these functionalities to their previous behaviors is now removed. Users 
+  are encouraged to audit their score scripts and migrate your score script to be compatible with Flask 2.
+ 
+  Flask's full changelog can be found here: https://flask.palletsprojects.com/en/2.1.x/changes/
+
+Enhancements
+------------
+
+- Upgraded waitress (only windows) package to 3.0.1
+
 1.3.4 (2024-10-21)
 ~~~~~~~~~~~~~~~~~~
 Azureml_Inference_Server_Http 1.3.4 (2024-10-21)
