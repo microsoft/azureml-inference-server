@@ -51,7 +51,6 @@ setuptools.setup(
     classifiers=[
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
@@ -63,9 +62,9 @@ setuptools.setup(
         "Operating System :: MacOS",
         "Operating System :: POSIX :: Linux",
     ],
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     install_requires=[
-        "flask<=2.3.2",  # We aim to be compatible with both flask 1 and 2
+        "flask~=3.0.0",
         "flask-cors~=5.0.0",
         'gunicorn>=23.0.0; platform_system!="Windows"',
         "inference-schema~=1.8.0",

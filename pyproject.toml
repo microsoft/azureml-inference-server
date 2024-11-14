@@ -8,7 +8,7 @@ markers = [
 
 [tool.black]
   line-length = 119
-  target-version = ['py38']
+  target-version = ['py39']
   extend-exclude = '''
   ^/(
       env/
