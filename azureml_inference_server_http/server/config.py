@@ -128,7 +128,7 @@ class AMLInferenceServerConfig(BaseSettings):
     app_insights_key: Optional[pydantic.SecretStr] = pydantic.Field(default=None)
 
     # Whether to enable model data collection
-    model_dc_storage_enabled: bool = pydantic.Field(default=False)
+    mdc_storage_enabled: bool = pydantic.Field(default=False)
 
     # Whether to log response to AppInsights
     app_insights_log_response_enabled: bool = pydantic.Field(default=True, alias="APP_INSIGHTS_LOG_RESPONSE_ENABLED")
