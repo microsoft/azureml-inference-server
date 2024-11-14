@@ -9,7 +9,7 @@ This is the Flask server or the Sanic server code. The azureml-inference-server-
 ### <a name="virtualenv">Setting your environment</a>
 
 - Clone the [azureml-inference-server](https://github.com/microsoft/azureml-inference-server) repository.
-- Install [Python 3.8](https://www.python.org/downloads/).
+- Install [Python 3.12](https://www.python.org/downloads/).
 - Install the virtualenv python package with `pip install virtualenv`.
 - Create a new virtual environment with `virtualenv <env name>`, for example `virtualenv amlinf`.
 - Activate the new environment.
