@@ -72,7 +72,7 @@ class AppInsightsClient(object):
 
     def send_model_data_log(self, request_id, client_request_id, model_input, prediction):
         try:
-            if not self.enabled or not config.model_dc_storage_enabled:
+            if not self.enabled or not config.mdc_storage_enabled:
                 return
             properties = {
                 "custom_dimensions": {
