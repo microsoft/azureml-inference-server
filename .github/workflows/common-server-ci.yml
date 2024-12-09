@@ -95,17 +95,6 @@ jobs:
       - name: Black check
         run: black --check .
 # Component Detection step
-
-name: Component Detection
-
-on:
-  workflow_dispatch:
-  push:
-
-permissions: 
-  id-token: write
-  contents: write
-
   Component-Detection:
     runs-on: ubuntu-latest
     permissions:
