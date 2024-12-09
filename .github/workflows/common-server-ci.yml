@@ -47,14 +47,7 @@ jobs:
       - name: Install azureml_inference_server_http
         run: |
             pip install -e .[dev]
-
-      # Component Detection step
-      - name: Component Detection
-        with:
-          task: ComponentGovernanceComponentDetection@0
-          inputs:
-            verbosity: 'Verbose'
-      
+              
       - name: Run Tests
         run: |
             set -e
@@ -101,3 +94,26 @@ jobs:
 
       - name: Black check
         run: black --check .
+# Component Detection step
+
+name: Component Detection
+
+on:
+  workflow_dispatch:
+  push:
+
+permissions: 
+  id-token: write
+  contents: write
+
+  Component-Detection:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - name: Clone branch
+        uses: actions/checkout@v3
+
+      - name: Component Detection
+        uses: advanced-security/component-detection-dependency-submission-action@v0.0.3
