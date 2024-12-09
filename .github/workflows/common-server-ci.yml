@@ -47,6 +47,13 @@ jobs:
       - name: Install azureml_inference_server_http
         run: |
             pip install -e .[dev]
+
+      # Component Detection step
+      - name: Component Detection
+        with:
+          task: ComponentGovernanceComponentDetection@0
+          inputs:
+            verbosity: 'Verbose'
       
       - name: Run Tests
         run: |
@@ -69,7 +76,6 @@ jobs:
           coverageFile: /home/runner/work/azureml-inference-server/azureml-inference-server/coverage.xml
           token: ${{ secrets.GITHUB_TOKEN }}
         if: runner.os == 'Linux' && matrix.python_version == '3.10' && env.COVERAGE == 'true' # Temporarily disable, this will always evaluate to false
-
   # Run Lint check for the source code
   Flake8:
     runs-on: 'ubuntu-latest'
