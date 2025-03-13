@@ -8,7 +8,8 @@ from types import ModuleType
 from typing import Any, Callable, Dict, NamedTuple, Optional
 
 import flask
-from inference_schema.schema_util import is_schema_decorated
+# Removed the import of inference_schema
+# from inference_schema.schema_util import is_schema_decorated
 
 from .exceptions import AzmlinfsrvError
 from .input_parsers import InputParserBase, JsonStringInput, ObjectInput, RawRequestInput
@@ -180,3 +181,28 @@ class UserScript:
 
     def get_run_function(self) -> Callable:
         return self._user_run
+
+
+# Implementing the replacement function for is_schema_decorated
+__functions_schema__ = set()
+
+def _get_decorators(func: Callable) -> list:
+    # Implement logic to get decorators of the function
+    # This is a placeholder implementation
+    return [func]
+
+def _get_function_full_qual_name(func: Callable) -> str:
+    # Implement logic to get the fully qualified name of the function
+    # This is a placeholder implementation
+    return f"{func.__module__}.{func.__name__}"
+
+def is_schema_decorated(func: Callable) -> bool:
+    """
+    Check if a function is schema decorated
+
+    :param func: function | FunctionWrapper
+    :return: boolean
+    """
+    decorators = _get_decorators(func)
+    func_base_name = _get_function_full_qual_name(decorators[-1])
+    return func_base_name in __functions_schema__

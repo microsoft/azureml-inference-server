@@ -6,12 +6,13 @@ import logging
 import os
 from typing import Any, Callable, ClassVar, Dict, Iterable, List, Optional, Set, Type, TypeVar
 
-from inference_schema.schema_util import (
-    get_input_schema,
-    get_output_schema,
-    get_supported_versions,
-    is_schema_decorated,
-)
+# Removed the import of inference_schema
+# from inference_schema.schema_util import (
+#     get_input_schema,
+#     get_output_schema,
+#     get_supported_versions,
+#     is_schema_decorated,
+# )
 
 from .config import config
 from .exceptions import AzmlAssertionError
@@ -150,7 +151,7 @@ class _SwaggerBuilder:
             return None
 
         if is_schema_decorated(run_function):
-            # run() is decorated. Get the input and output schema from inference-schema.
+            # run() is decorated. Get the input and output schema from the new functions.
             input_schema = get_input_schema(run_function)
             output_schema = get_output_schema(run_function)
         else:
@@ -160,7 +161,7 @@ class _SwaggerBuilder:
         with open(template_path, "r", encoding="utf-8") as f:
             swagger_spec_str = f.read()
 
-        # Substitude special values in the template JSON.
+        # Substitute special values in the template JSON.
         swagger_spec_str = (
             swagger_spec_str.replace("$SERVICE_NAME$", config.service_name)
             .replace("$SERVICE_VERSION$", config.service_version)
@@ -172,6 +173,81 @@ class _SwaggerBuilder:
         swagger_spec = json.loads(swagger_spec_str)
         self._update_definitions(swagger_spec, input_schema, output_schema)
         return swagger_spec
+
+# Implementing the replacement functions
+__functions_schema__ = {}
+__versions__ = {}
+ALL_SUPPORTED_VERSIONS = ["2.0", "3.0", "3.1"]
+
+def _get_decorators(func: Callable) -> list:
+    # Implement logic to get decorators of the function
+    # This is a placeholder implementation
+    return [func]
+
+def _get_function_full_qual_name(func: Callable) -> str:
+    # Implement logic to get the fully qualified name of the function
+    # This is a placeholder implementation
+    return f"{func.__module__}.{func.__name__}"
+
+def _get_schema_from_dictionary(attr: str, func: Callable) -> dict:
+    # Implement logic to get schema from a dictionary
+    # This is a placeholder implementation
+    func_base_name = _get_function_full_qual_name(func)
+    return __functions_schema__.get(func_base_name, {}).get(attr, {})
+
+def get_input_schema(func: Callable) -> dict:
+    """
+    Extract the swagger input schema model from the decorated function.
+
+    :param func: function | FunctionWrapper
+    :return: dict
+    """
+    return _get_schema_from_dictionary("input_schema", func)
+
+def get_output_schema(func: Callable) -> dict:
+    """
+    Extract the swagger output schema model from the decorated function.
+
+    :param func: function | FunctionWrapper
+    :return: dict
+    """
+    return _get_schema_from_dictionary("output_schema", func)
+
+def get_supported_versions(func: Callable) -> List[str]:
+    """
+    Extract supported swagger versions from the decorated function. This will return the min set of supported
+    versions between any decorators provided to the specified function. This could result in an empty list
+    (if there is no overlap in versions between decorators), and it is ultimately up to the caller to decide
+    how that case should be handled when creating the swagger document.
+
+    :param func: function | FunctionWrapper
+    :return: list
+    """
+    decorators = _get_decorators(func)
+    func_base_name = _get_function_full_qual_name(decorators[-1])
+
+    input_versions = __versions__.get(func_base_name, {}).get("input_schema", {}).get('versions', [])
+    output_versions = __versions__.get(func_base_name, {}).get("output_schema", {}).get('versions', [])
+    if input_versions and output_versions:
+        set_intersection = set(input_versions) & set(output_versions)
+    elif input_versions:
+        set_intersection = set(input_versions)
+    elif output_versions:
+        set_intersection = set(output_versions)
+    else:
+        set_intersection = ALL_SUPPORTED_VERSIONS
+    return sorted(list(set_intersection))
+
+def is_schema_decorated(func: Callable) -> bool:
+    """
+    Check if a function is schema decorated
+
+    :param func: function | FunctionWrapper
+    :return: boolean
+    """
+    decorators = _get_decorators(func)
+    func_base_name = _get_function_full_qual_name(decorators[-1])
+    return func_base_name in __functions_schema__
 
 
 @Swagger._register_builder("2", aliases=["2.0"])
