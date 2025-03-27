@@ -11,7 +11,7 @@ import uuid
 from azure.identity import DefaultAzureCredential
 from azure.monitor.query import LogsQueryClient, LogsQueryStatus
 import flask
-from opencensus.trace.blank_span import BlankSpan
+from opentelemetry.trace import NonRecordingSpan
 import pandas as pd
 import pytest
 
@@ -125,7 +125,7 @@ def test_appinsights_response_not_string(app_appinsights: flask.Flask):
     """Verifies the appinsights logging with scoring request response not a valid string"""
 
     mock_tracer = Mock()
-    mock_span = BlankSpan()
+    mock_span = NonRecordingSpan()
     mock_tracer.span = Mock(return_value=mock_span)
 
     @app_appinsights.set_user_run
@@ -146,12 +146,12 @@ def test_appinsights_response_not_string(app_appinsights: flask.Flask):
         "Service Name": "ML service",
     }
     for item in expected_data:
-        assert expected_data[item] == mock_span.attributes[item]
+        assert expected_data[item] == mock_span.attributes.get(item, None)
 
 
 def test_appinsights_request_no_response_payload_log(app_appinsights: flask.Flask):
     mock_tracer = Mock()
-    mock_span = BlankSpan()
+    mock_span = NonRecordingSpan()
     mock_tracer.span = Mock(return_value=mock_span)
 
     app_appinsights.azml_blueprint.appinsights_client.tracer = mock_tracer
@@ -172,7 +172,7 @@ def test_appinsights_request_no_response_payload_log(app_appinsights: flask.Flas
     assert len(mock_span.attributes) == 13
 
     for item in expected_data:
-        assert expected_data[item] == mock_span.attributes[item]
+        assert expected_data[item] == mock_span.attributes.get(item, None)
 
     uuid.UUID(mock_span.span_id).hex
     # Just check that duration header is logged, as it will be some string time value

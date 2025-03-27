@@ -9,11 +9,14 @@ import sys
 import time
 
 import flask
-from opencensus.ext.azure.log_exporter import AzureLogHandler
-from opencensus.ext.azure.trace_exporter import AzureExporter
-from opencensus.trace import samplers
-from opencensus.trace.span import SpanKind
-from opencensus.trace.tracer import Tracer
+from opentelemetry.instrumentation.logging import LoggingInstrumentor
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.trace import get_tracer_provider, set_tracer_provider, Tracer
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk._logs import LoggingHandler
 
 from .config import config
 
@@ -40,24 +43,21 @@ class AppInsightsClient(object):
         if config.app_insights_enabled and config.app_insights_key:
             try:
                 instrumentation_key = config.app_insights_key.get_secret_value()
-                self.azureLogHandler = AzureLogHandler(
-                    instrumentation_key=instrumentation_key,
-                    export_interval=AppInsightsClient.send_interval,
-                    max_batch_size=AppInsightsClient.send_buffer_size,
-                )
-                logger.addHandler(self.azureLogHandler)
-                logging.getLogger("azmlinfsrv.print").addHandler(self.azureLogHandler)
-                azureExporter = AzureExporter(
-                    instrumentation_key=instrumentation_key,
-                    export_interval=AppInsightsClient.send_interval,
-                    max_batch_size=AppInsightsClient.send_buffer_size,
-                )
-                self.tracer = Tracer(
-                    exporter=azureExporter,
-                    sampler=samplers.AlwaysOnSampler(),
-                )
+                resource = Resource.create({"service.name": config.service_name})
+                set_tracer_provider(TracerProvider(resource=resource))
+                span_exporter = OTLPSpanExporter(endpoint=f"https://{instrumentation_key}.applicationinsights.azure.com/v2/track")
+                span_processor = BatchSpanProcessor(span_exporter)
+                get_tracer_provider().add_span_processor(span_processor)
+                self.tracer = get_tracer_provider().get_tracer(__name__)
                 self._container_id = config.hostname
                 self.enabled = True
+                
+                LoggingInstrumentor().instrument(set_logging_format=True)
+                FlaskInstrumentor().instrument_app(flask.Flask(__name__))
+                
+                self.azureLogHandler = LoggingHandler(level=logging.INFO)
+                logger.addHandler(self.azureLogHandler)
+                logging.getLogger("azmlinfsrv.print").addHandler(self.azureLogHandler)
             except Exception as ex:
                 self.log_app_insights_exception(ex)
 
@@ -137,11 +137,8 @@ class AppInsightsClient(object):
             }
 
             # Send the log to the requests table
-            with self.tracer.span(name=request.path) as span:
-                span.span_id = request_id
-                span.start_time = formatted_start_time
-                span.attributes = attributes
-                span.span_kind = SpanKind.SERVER
+            with self.tracer.start_as_current_span(request.path) as span:
+                span.set_attributes(attributes)
         except Exception as ex:
             self.log_app_insights_exception(ex)
 
