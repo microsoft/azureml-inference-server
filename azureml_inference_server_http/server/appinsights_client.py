@@ -7,16 +7,20 @@ import logging
 import os
 import sys
 import time
+import requests  # Import the requests library
 
 import flask
 from opentelemetry.instrumentation.logging import LoggingInstrumentor
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
+from opentelemetry.instrumentation.requests import RequestsInstrumentor  # Import RequestsInstrumentor
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-from opentelemetry.trace import get_tracer_provider, set_tracer_provider, Tracer
+from opentelemetry.trace import get_tracer_provider, set_tracer_provider, SpanKind
 from opentelemetry.sdk.resources import Resource
-from opentelemetry.sdk._logs import LoggingHandler
+from opentelemetry.sdk._logs import LoggingHandler, LoggerProvider, set_logger_provider
+from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
+from azure.monitor.opentelemetry.exporter import AzureMonitorLogExporter, AzureMonitorTraceExporter
+from opentelemetry.sdk.trace.sampling import ALWAYS_ON
 
 from .config import config
 
@@ -42,22 +46,40 @@ class AppInsightsClient(object):
 
         if config.app_insights_enabled and config.app_insights_key:
             try:
-                instrumentation_key = config.app_insights_key.get_secret_value()
+                connection_string = f"InstrumentationKey={config.app_insights_key.get_secret_value()}"
+
+                # Configure the resource
                 resource = Resource.create({"service.name": config.service_name})
-                set_tracer_provider(TracerProvider(resource=resource))
-                span_exporter = OTLPSpanExporter(endpoint=f"https://{instrumentation_key}.applicationinsights.azure.com/v2/track")
-                span_processor = BatchSpanProcessor(span_exporter)
-                get_tracer_provider().add_span_processor(span_processor)
-                self.tracer = get_tracer_provider().get_tracer(__name__)
-                self._container_id = config.hostname
-                self.enabled = True
-                
-                LoggingInstrumentor().instrument(set_logging_format=True)
-                FlaskInstrumentor().instrument_app(flask.Flask(__name__))
-                
+
+                # Configure logging
+                logger_provider = LoggerProvider(resource=resource)
+                set_logger_provider(logger_provider)
+                azure_log_exporter = AzureMonitorLogExporter(connection_string=connection_string)
+                logger_provider.add_log_record_processor(BatchLogRecordProcessor(azure_log_exporter))
+
+                # Attach the LoggingHandler to the logger
                 self.azureLogHandler = LoggingHandler(level=logging.INFO)
                 logger.addHandler(self.azureLogHandler)
                 logging.getLogger("azmlinfsrv.print").addHandler(self.azureLogHandler)
+
+                # Configure tracing
+                tracer_provider = TracerProvider(resource=resource, sampler=ALWAYS_ON)
+                azure_span_exporter = AzureMonitorTraceExporter(connection_string=connection_string)
+                tracer_provider.add_span_processor(BatchSpanProcessor(azure_span_exporter))
+                set_tracer_provider(tracer_provider)
+                self.tracer = get_tracer_provider().get_tracer(__name__)
+
+                # Instrument requests library
+                RequestsInstrumentor().instrument(tracer_provider=get_tracer_provider())
+                logger.info("Requests library instrumentation enabled.")
+
+                # Test HTTP request to verify instrumentation
+                response = requests.get("https://azure.microsoft.com/")
+                logger.info(f"Test HTTP request status code: {response.status_code}")
+
+                self._container_id = config.hostname
+                self.enabled = True
+                logger.info("AppInsightsClient initialized successfully.")
             except Exception as ex:
                 self.log_app_insights_exception(ex)
 
@@ -111,8 +133,7 @@ class AppInsightsClient(object):
                 self.log_app_insights_exception(ex)
                 response_value = "Scoring request response payload is a non serializable object or raw binary"
 
-            # We have to encode the response value (which is a string) as a JSON to maintain backwards compatibility.
-            # This encodes '{"a": 12}' as '"{\\"a\\": 12}"'
+            # Encode the response value as JSON
             response_value = json.dumps(response_value)
         else:
             response_value = None
@@ -121,25 +142,28 @@ class AppInsightsClient(object):
         formatted_start_time = start_datetime.isoformat() + "Z"
         try:
             attributes = {
-                "Container Id": self._container_id,
-                "Request Id": request_id,
-                "Client Request Id": client_request_id,
-                "Response Value": response_value,
-                "name": request.path,
-                "url": request.url,
+                "http.method": request.method,
+                "http.url": request.url,
+                "http.target": request.path,
+                "http.status_code": response.status_code,
+                "http.response_content_length": len(response.data) if response.data else 0,
+                "http.client_ip": request.remote_addr,
+                "ai.operation.id": request_id,
+                "ai.operation.parentId": client_request_id,
+                "ai.operation.name": request.path,
                 "start_time": formatted_start_time,
                 "duration": self._calc_duration(duration_ms),
-                "resultCode": str(response.status_code),  # Cast to string to maintain backwards compatibility
                 "success": successful,
-                "http_method": request.method,
                 "Workspace Name": config.workspace_name,
                 "Service Name": config.service_name,
             }
 
-            # Send the log to the requests table
-            with self.tracer.start_as_current_span(request.path) as span:
-                span.set_attributes(attributes)
+            # Send the log to the requests table using OpenTelemetry
+            with self.tracer.start_as_current_span(request.path, kind=SpanKind.SERVER) as span:
+                for key, value in attributes.items():
+                    span.set_attribute(key, value)
         except Exception as ex:
+            logger.error("Error while logging request", exc_info=True)
             self.log_app_insights_exception(ex)
 
     def send_exception_log(self, exc_info, request_id="Unknown", client_request_id=""):
