@@ -72,6 +72,7 @@ setuptools.setup(
         "opentelemetry-exporter-otlp",
         "opentelemetry-instrumentation-logging",
         "opentelemetry-instrumentation-flask",
+        "azure-monitor-opentelemetry-exporter",
         'psutil<6.0.0; platform_system=="Windows"',
         "pydantic~=2.9.0",
         "pydantic-settings",
