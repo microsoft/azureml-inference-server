@@ -53,7 +53,7 @@ def test_appinsights_e2e(config, app):
 
     # Search for the exact message within the print log hook module
     query = f"""
-        traces
+        AppTraces
         | where Properties.code.function == 'print_to_logger'
         | where Message == '{log_message}'
     """
@@ -168,8 +168,10 @@ def test_appinsights_request_no_response_payload_log(app_appinsights: flask.Flas
 
     # Mock to track attributes set via set_attributes
     attributes = {}
+
     def mock_set_attributes(attrs):
         attributes.update(attrs)
+
     mock_span.set_attributes = mock_set_attributes
 
     app_appinsights.azml_blueprint.appinsights_client.tracer = mock_tracer
