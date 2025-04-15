@@ -54,7 +54,7 @@ def test_appinsights_e2e(config, app):
     # Search for the exact message within the print log hook module
     query = f"""
         AppTraces
-        | where Properties.code.function == 'print_to_logger'
+        | where Properties.module == 'print_log_hook'
         | where Message == '{log_message}'
     """
 
