@@ -7,17 +7,16 @@ import logging
 import os
 import sys
 import time
-import requests  # Import the requests library
+import requests
 
 import flask
-from opentelemetry.instrumentation.logging import LoggingInstrumentor
-from opentelemetry.instrumentation.flask import FlaskInstrumentor
-from opentelemetry.instrumentation.requests import RequestsInstrumentor  # Import RequestsInstrumentor
+from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.trace import get_tracer_provider, set_tracer_provider, SpanKind
 from opentelemetry.sdk.resources import Resource
-from opentelemetry.sdk._logs import LoggingHandler, LoggerProvider, set_logger_provider
+from opentelemetry.sdk._logs import LoggingHandler, LoggerProvider
+from opentelemetry._logs import set_logger_provider
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 from azure.monitor.opentelemetry.exporter import AzureMonitorLogExporter, AzureMonitorTraceExporter
 from opentelemetry.sdk.trace.sampling import ALWAYS_ON
@@ -49,7 +48,11 @@ class AppInsightsClient(object):
                 connection_string = f"InstrumentationKey={config.app_insights_key.get_secret_value()}"
 
                 # Configure the resource
-                resource = Resource.create({"service.name": config.service_name})
+                resource = Resource.create({
+                    "service.name": config.service_name,
+                    "service.instance.id": config.hostname,
+                    "service.version": config.service_version,
+                })
 
                 # Configure logging
                 logger_provider = LoggerProvider(resource=resource)
@@ -71,15 +74,9 @@ class AppInsightsClient(object):
 
                 # Instrument requests library
                 RequestsInstrumentor().instrument(tracer_provider=get_tracer_provider())
-                logger.info("Requests library instrumentation enabled.")
-
-                # Test HTTP request to verify instrumentation
-                response = requests.get("https://azure.microsoft.com/")
-                logger.info(f"Test HTTP request status code: {response.status_code}")
 
                 self._container_id = config.hostname
                 self.enabled = True
-                logger.info("AppInsightsClient initialized successfully.")
             except Exception as ex:
                 self.log_app_insights_exception(ex)
 
@@ -88,9 +85,9 @@ class AppInsightsClient(object):
             logger.removeHandler(self.azureLogHandler)
             logging.getLogger("azmlinfsrv.print").removeHandler(self.azureLogHandler)
 
-    def log_app_insights_exception(self, ex):
-        print("Error logging to Application Insights:")
-        print(ex)
+    def log_app_insights_exception(self, ex: Exception) -> None:
+        """Log exceptions to Application Insights."""
+        logger.error("Error logging to Application Insights:", exc_info=ex)
 
     def send_model_data_log(self, request_id, client_request_id, model_input, prediction):
         try:
@@ -98,11 +95,11 @@ class AppInsightsClient(object):
                 return
             properties = {
                 "custom_dimensions": {
-                    "Container Id": self._container_id,
                     "Request Id": request_id,
+                    "Service Name": config.service_name,
+                    "Container Id": self._container_id,
                     "Client Request Id": client_request_id,
                     "Workspace Name": config.workspace_name,
-                    "Service Name": config.service_name,
                     "Models": self._model_ids,
                     "Input": json.dumps(model_input),
                     "Prediction": json.dumps(prediction),
@@ -132,9 +129,6 @@ class AppInsightsClient(object):
             except (UnicodeDecodeError, AttributeError) as ex:
                 self.log_app_insights_exception(ex)
                 response_value = "Scoring request response payload is a non serializable object or raw binary"
-
-            # Encode the response value as JSON
-            response_value = json.dumps(response_value)
         else:
             response_value = None
 
@@ -142,18 +136,17 @@ class AppInsightsClient(object):
         formatted_start_time = start_datetime.isoformat() + "Z"
         try:
             attributes = {
-                "http.method": request.method,
-                "http.url": request.url,
-                "http.target": request.path,
-                "http.status_code": response.status_code,
-                "http.response_content_length": len(response.data) if response.data else 0,
-                "http.client_ip": request.remote_addr,
-                "ai.operation.id": request_id,
-                "ai.operation.parentId": client_request_id,
-                "ai.operation.name": request.path,
+                "Container Id": self._container_id,
+                "Request Id": request_id,
+                "Client Request Id": client_request_id,
+                "Response Value": response_value,
+                "name": request.path,
+                "url": request.url,
                 "start_time": formatted_start_time,
                 "duration": self._calc_duration(duration_ms),
+                "resultCode": str(response.status_code),
                 "success": successful,
+                "http_method": request.method,
                 "Workspace Name": config.workspace_name,
                 "Service Name": config.service_name,
             }
@@ -190,8 +183,6 @@ class AppInsightsClient(object):
             local_duration //= multiplier
         duration_parts.reverse()
         formatted_duration = "%02d:%02d:%02d.%03d" % tuple(duration_parts)
-        if local_duration:
-            formatted_duration = "%d.%s" % (local_duration, formatted_duration)
         return formatted_duration
 
     def _get_model_ids(self):
@@ -200,14 +191,17 @@ class AppInsightsClient(object):
         # /var/azureml-app/azureml-models will be used to enumerate all the models.
         model_ids = []
         try:
-            models = [str(model) for model in os.listdir(config.azureml_model_dir)]
+            if not config.azureml_model_dir or not os.path.exists(config.azureml_model_dir):
+                logger.warning("Model directory is not set or does not exist: %s", config.azureml_model_dir)
+                return model_ids
 
+            models = [str(model) for model in os.listdir(config.azureml_model_dir)]
             for model in models:
                 versions = [int(version) for version in os.listdir(os.path.join(config.azureml_model_dir, model))]
                 ids = ["{}:{}".format(model, version) for version in versions]
                 model_ids.extend(ids)
         except Exception:
-            self.send_exception_log(sys.exc_info())
+            logger.exception("Error while fetching model IDs")
 
         return model_ids
 
