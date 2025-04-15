@@ -5,6 +5,7 @@ asyncio_mode = "auto"
 markers = [
   "online: test has online dependencies",
 ]
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.black]
   line-length = 119

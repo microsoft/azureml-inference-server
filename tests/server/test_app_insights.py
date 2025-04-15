@@ -11,7 +11,8 @@ import uuid
 from azure.identity import DefaultAzureCredential
 from azure.monitor.query import LogsQueryClient, LogsQueryStatus
 import flask
-from opentelemetry.trace import NonRecordingSpan
+from opentelemetry.trace import NonRecordingSpan, SpanContext
+from opentelemetry.trace import TraceFlags
 import pandas as pd
 import pytest
 
@@ -125,7 +126,13 @@ def test_appinsights_response_not_string(app_appinsights: flask.Flask):
     """Verifies the appinsights logging with scoring request response not a valid string"""
 
     mock_tracer = Mock()
-    mock_span = NonRecordingSpan()
+    span_context = SpanContext(
+        trace_id=0x12345678123456781234567812345678,
+        span_id=0x1234567812345678,
+        is_remote=False,
+        trace_flags=TraceFlags(0x01),
+    )
+    mock_span = NonRecordingSpan(span_context)
     mock_tracer.span = Mock(return_value=mock_span)
 
     @app_appinsights.set_user_run
@@ -151,7 +158,13 @@ def test_appinsights_response_not_string(app_appinsights: flask.Flask):
 
 def test_appinsights_request_no_response_payload_log(app_appinsights: flask.Flask):
     mock_tracer = Mock()
-    mock_span = NonRecordingSpan()
+    span_context = SpanContext(
+        trace_id=0x12345678123456781234567812345678,
+        span_id=0x1234567812345678,
+        is_remote=False,
+        trace_flags=TraceFlags(0x01),
+    )
+    mock_span = NonRecordingSpan(span_context)
     mock_tracer.span = Mock(return_value=mock_span)
 
     app_appinsights.azml_blueprint.appinsights_client.tracer = mock_tracer

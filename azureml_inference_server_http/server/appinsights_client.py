@@ -5,9 +5,7 @@ import datetime
 import json
 import logging
 import os
-import sys
 import time
-import requests
 
 import flask
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
@@ -48,11 +46,13 @@ class AppInsightsClient(object):
                 connection_string = f"InstrumentationKey={config.app_insights_key.get_secret_value()}"
 
                 # Configure the resource
-                resource = Resource.create({
-                    "service.name": config.service_name,
-                    "service.instance.id": config.hostname,
-                    "service.version": config.service_version,
-                })
+                resource = Resource.create(
+                    {
+                        "service.name": config.service_name,
+                        "service.instance.id": config.hostname,
+                        "service.version": config.service_version,
+                    }
+                )
 
                 # Configure logging
                 logger_provider = LoggerProvider(resource=resource)
