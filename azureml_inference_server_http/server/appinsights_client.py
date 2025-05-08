@@ -48,9 +48,7 @@ class AppInsightsClient(object):
 
                 logger_provider = LoggerProvider(resource=resource)
                 set_logger_provider(logger_provider)
-                log_exporter = AzureMonitorLogExporter(
-                    connection_string=f"InstrumentationKey={instrumentation_key}"
-                )
+                log_exporter = AzureMonitorLogExporter(connection_string=f"InstrumentationKey={instrumentation_key}")
                 get_logger_provider().add_log_record_processor(BatchLogRecordProcessor(log_exporter))
 
                 # Add log handler
@@ -123,7 +121,7 @@ class AppInsightsClient(object):
             except (UnicodeDecodeError, AttributeError) as ex:
                 self.log_app_insights_exception(ex)
                 response_value = "Scoring request response payload is a non serializable object or raw binary"
-                # We have to encode the response value (which is a string) as a JSON to maintain backwards compatibility.
+                # We have to encode the response value (which is string) as a JSON to maintain backwards compatibility.
                 # This encodes '{"a": 12}' as '"{\\"a\\": 12}"'
                 response_value = json.dumps(response_value)
         else:
@@ -141,7 +139,7 @@ class AppInsightsClient(object):
                 "url": request.url,
                 "start_time": formatted_start_time,
                 "duration": self._calc_duration(duration_ms),
-                "resultCode": str(response.status_code), # Cast to string to maintain backwards compatibility
+                "resultCode": str(response.status_code),  # Cast to string to maintain backwards compatibility
                 "success": successful,
                 "http_method": request.method,
                 "Workspace Name": config.workspace_name,
@@ -188,8 +186,9 @@ class AppInsightsClient(object):
         # Model information is stored in /var/azureml-app/model_config_map.json in AKS deployments. But, in ACI
         # deployments, that file does not exist due to a bug in container build-out code. Until the bug is fixed
         # /var/azureml-app/azureml-models will be used to enumerate all the models.
-        # For single model setup, config.azureml_model_dir points to /var/azureml-app/azureml-models/$MODEL_NAME/$VERSION
-        # For multiple model setup, it points to the folder containing all deployed models (/var/azureml-app/azureml-models)
+        # For single model setup, config.azureml_model_dir points
+        # to /var/azureml-app/azureml-models/$MODEL_NAME/$VERSION
+        # For multiple model setup, it points to /var/azureml-app/azureml-models
         model_ids = []
         try:
             if not config.azureml_model_dir or not os.path.exists(config.azureml_model_dir):
