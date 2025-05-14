@@ -14,8 +14,8 @@ from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk._logs import LoggingHandler, LoggerProvider
-from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 from opentelemetry._logs import set_logger_provider, get_logger_provider
+from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 from opentelemetry.sdk.trace.sampling import ALWAYS_ON
 
 from .config import config
@@ -43,44 +43,34 @@ class AppInsightsClient(object):
         if config.app_insights_enabled and config.app_insights_key:
             try:
                 instrumentation_key = config.app_insights_key.get_secret_value()
-                connection_string = f"InstrumentationKey={instrumentation_key}"
 
                 resource = Resource.create(attributes={"service.name": config.service_name})
 
-                # Initialize OpenTelemetry logging
-                self.init_otel_log(connection_string, resource)
+                logger_provider = LoggerProvider(resource=resource)
+                set_logger_provider(logger_provider)
+                log_exporter = AzureMonitorLogExporter(connection_string=f"InstrumentationKey={instrumentation_key}")
+                get_logger_provider().add_log_record_processor(BatchLogRecordProcessor(log_exporter))
 
-                # Initialize OpenTelemetry tracing
-                self.init_otel_trace(connection_string, resource)
+                # Add log handler
+                self.azureLogHandler = LoggingHandler(level=logging.INFO)
+                logger.addHandler(self.azureLogHandler)
+                logging.getLogger("azmlinfsrv.print").addHandler(self.azureLogHandler)
+
+                # Setup tracer provider and exporter
+                tracer_provider = TracerProvider(sampler=ALWAYS_ON, resource=resource)
+                trace.set_tracer_provider(tracer_provider)
+                trace_exporter = AzureMonitorTraceExporter(
+                    connection_string=f"InstrumentationKey={instrumentation_key}"
+                )
+                trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(trace_exporter))
+
+                # Set up tracer
+                self.tracer = trace.get_tracer(__name__)
+                self._container_id = config.hostname
+                self.enabled = True
 
             except Exception as ex:
                 self.log_app_insights_exception(ex)
-
-    def init_otel_trace(self, connection_string, resource):
-
-        # Setup tracer provider and exporter
-        tracer_provider = TracerProvider(sampler=ALWAYS_ON, resource=resource)
-        trace.set_tracer_provider(tracer_provider)
-        trace_exporter = AzureMonitorTraceExporter(connection_string=connection_string)
-        trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(trace_exporter))
-
-        # Set up tracer
-        self.tracer = trace.get_tracer(__name__)
-        self._container_id = config.hostname
-        self.enabled = True
-
-    def init_otel_log(self, connection_string, resource):
-
-        # Setup logger provider and exporter
-        logger_provider = LoggerProvider(resource=resource)
-        set_logger_provider(logger_provider)
-        log_exporter = AzureMonitorLogExporter(connection_string=connection_string)
-        get_logger_provider().add_log_record_processor(BatchLogRecordProcessor(log_exporter))
-
-        # Add log handler
-        self.azureLogHandler = LoggingHandler(level=logging.INFO)
-        logger.addHandler(self.azureLogHandler)
-        logging.getLogger("azmlinfsrv.print").addHandler(self.azureLogHandler)
 
     def close(self):
         if self.azureLogHandler:
