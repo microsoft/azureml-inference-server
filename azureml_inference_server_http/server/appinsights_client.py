@@ -67,11 +67,7 @@ class AppInsightsClient(object):
         # Setup tracer provider and exporter
         tracer_provider = TracerProvider(sampler=ALWAYS_ON, resource=resource)
         trace.set_tracer_provider(tracer_provider)
-        trace_exporter = AzureMonitorTraceExporter(
-            connection_string=connection_string,
-            send_interval=AppInsightsClient.send_interval,
-            send_buffer_size=AppInsightsClient.send_buffer_size,
-        )
+        trace_exporter = AzureMonitorTraceExporter(connection_string=connection_string)
         trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(trace_exporter))
 
         # Set up tracer
@@ -85,12 +81,7 @@ class AppInsightsClient(object):
         logger_provider = LoggerProvider(resource=resource)
         set_logger_provider(logger_provider)
         log_exporter = AzureMonitorLogExporter(connection_string=connection_string)
-        log_processor = BatchLogRecordProcessor(
-            exporter=log_exporter,
-            schedule_delay_millis=AppInsightsClient.send_interval * 1000,
-            max_export_batch_size=AppInsightsClient.send_buffer_size,
-        )
-        get_logger_provider().add_log_record_processor(log_processor)
+        get_logger_provider().add_log_record_processor(BatchLogRecordProcessor(log_exporter))
 
         # Add log handler
         self.azureLogHandler = LoggingHandler(level=logging.INFO)
