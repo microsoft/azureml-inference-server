@@ -9,10 +9,9 @@ import time
 
 import flask
 from azure.monitor.opentelemetry.exporter import AzureMonitorLogExporter, AzureMonitorTraceExporter
-from opentelemetry.sdk.resources import get_aggregated_resources, ProcessResourceDetector
-from opentelemetry.semconv.resource import ResourceAttributes
+from opentelemetry.sdk.resources import Resource
 from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider, Resource
+from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk._logs import LoggingHandler, LoggerProvider
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
@@ -46,12 +45,7 @@ class AppInsightsClient(object):
                 instrumentation_key = config.app_insights_key.get_secret_value()
                 connection_string = f"InstrumentationKey={instrumentation_key}"
 
-                resource = get_aggregated_resources(
-                    detectors=[ProcessResourceDetector()],
-                    initial_resource=Resource.create(
-                        attributes={ResourceAttributes.SERVICE_NAME: config.service_name}
-                    ),
-                )
+                resource = Resource.create(attributes={"service.name": config.service_name})
 
                 # Initialize OpenTelemetry logging
                 self.init_otel_log(connection_string, resource)
