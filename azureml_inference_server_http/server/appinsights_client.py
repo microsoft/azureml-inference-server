@@ -9,13 +9,14 @@ import time
 
 import flask
 from azure.monitor.opentelemetry.exporter import AzureMonitorLogExporter, AzureMonitorTraceExporter
-from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.resources import get_aggregated_resources, ProcessResourceDetector
+from opentelemetry.semconv.resource import ResourceAttributes
 from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace import TracerProvider, Resource
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk._logs import LoggingHandler, LoggerProvider
-from opentelemetry._logs import set_logger_provider, get_logger_provider
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
+from opentelemetry._logs import set_logger_provider, get_logger_provider
 from opentelemetry.sdk.trace.sampling import ALWAYS_ON
 
 from .config import config
@@ -43,34 +44,58 @@ class AppInsightsClient(object):
         if config.app_insights_enabled and config.app_insights_key:
             try:
                 instrumentation_key = config.app_insights_key.get_secret_value()
+                connection_string = f"InstrumentationKey={instrumentation_key}"
 
-                resource = Resource.create(attributes={"service.name": config.service_name})
-
-                logger_provider = LoggerProvider(resource=resource)
-                set_logger_provider(logger_provider)
-                log_exporter = AzureMonitorLogExporter(connection_string=f"InstrumentationKey={instrumentation_key}")
-                get_logger_provider().add_log_record_processor(BatchLogRecordProcessor(log_exporter))
-
-                # Add log handler
-                self.azureLogHandler = LoggingHandler(level=logging.INFO)
-                logger.addHandler(self.azureLogHandler)
-                logging.getLogger("azmlinfsrv.print").addHandler(self.azureLogHandler)
-
-                # Setup tracer provider and exporter
-                tracer_provider = TracerProvider(sampler=ALWAYS_ON, resource=resource)
-                trace.set_tracer_provider(tracer_provider)
-                trace_exporter = AzureMonitorTraceExporter(
-                    connection_string=f"InstrumentationKey={instrumentation_key}"
+                resource = get_aggregated_resources(
+                    detectors=[ProcessResourceDetector()],
+                    initial_resource=Resource.create(
+                        attributes={ResourceAttributes.SERVICE_NAME: config.service_name}
+                    ),
                 )
-                trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(trace_exporter))
 
-                # Set up tracer
-                self.tracer = trace.get_tracer(__name__)
-                self._container_id = config.hostname
-                self.enabled = True
+                # Initialize OpenTelemetry logging
+                self.init_otel_log(connection_string, resource)
+
+                # Initialize OpenTelemetry tracing
+                self.init_otel_trace(connection_string, resource)
 
             except Exception as ex:
                 self.log_app_insights_exception(ex)
+
+    def init_otel_trace(self, connection_string, resource):
+
+        # Setup tracer provider and exporter
+        tracer_provider = TracerProvider(sampler=ALWAYS_ON, resource=resource)
+        trace.set_tracer_provider(tracer_provider)
+        trace_exporter = AzureMonitorTraceExporter(
+            connection_string=connection_string,
+            send_interval=AppInsightsClient.send_interval,
+            send_buffer_size=AppInsightsClient.send_buffer_size,
+        )
+        trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(trace_exporter))
+
+        # Set up tracer
+        self.tracer = trace.get_tracer(__name__)
+        self._container_id = config.hostname
+        self.enabled = True
+
+    def init_otel_log(self, connection_string, resource):
+
+        # Setup logger provider and exporter
+        logger_provider = LoggerProvider(resource=resource)
+        set_logger_provider(logger_provider)
+        log_exporter = AzureMonitorLogExporter(connection_string=connection_string)
+        log_processor = BatchLogRecordProcessor(
+            exporter=log_exporter,
+            schedule_delay_millis=AppInsightsClient.send_interval * 1000,
+            max_export_batch_size=AppInsightsClient.send_buffer_size,
+        )
+        get_logger_provider().add_log_record_processor(log_processor)
+
+        # Add log handler
+        self.azureLogHandler = LoggingHandler(level=logging.INFO)
+        logger.addHandler(self.azureLogHandler)
+        logging.getLogger("azmlinfsrv.print").addHandler(self.azureLogHandler)
 
     def close(self):
         if self.azureLogHandler:
