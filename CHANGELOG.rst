@@ -1,3 +1,11 @@
+1.4.1 (2025-06-10)
+~~~~~~~~~~~~~~~~~~
+Azureml_Inference_Server_Http 1.4.1 (2025-06-10)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Remove azureml contrib service local references
+- Update flask-cors packages to mitigate vulnerabilities
+
 1.4.0 (2024-11-13)
 ~~~~~~~~~~~~~~~~~~
 Azureml_Inference_Server_Http 1.4.0 (2024-11-13)
