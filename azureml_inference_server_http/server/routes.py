@@ -91,7 +91,7 @@ def all_unhandled_exception(error):
 @main_blueprint.before_request
 def _before_request() -> None:
     g.api_name = None
-    g.start_datetime = datetime.datetime.utcnow()
+    g.start_datetime = datetime.datetime.now(datetime.UTC)
     g.starting_perf_counter = time.perf_counter()
 
 
