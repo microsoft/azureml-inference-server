@@ -64,8 +64,8 @@ setuptools.setup(
     ],
     python_requires=">=3.9",
     install_requires=[
-        "flask~=3.0.0",
-        "flask-cors~=5.0.0",
+        "flask~=3.1.0",
+        "flask-cors~=6.0.0",
         'gunicorn>=23.0.0; platform_system!="Windows"',
         "inference-schema~=1.8.0",
         "opentelemetry-sdk==1.33.0",
@@ -73,7 +73,7 @@ setuptools.setup(
         "opentelemetry-semantic-conventions",
         "azure-monitor-opentelemetry-exporter",
         'psutil<6.0.0; platform_system=="Windows"',
-        "pydantic~=2.9.0",
+        "pydantic~=2.11.0",
         "pydantic-settings",
         'waitress>=3.0.1; platform_system=="Windows"',
         "werkzeug>=3.0.3",  # Werkzeug 3.x breaks back-compatibility of urls package
