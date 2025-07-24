@@ -64,11 +64,11 @@ def app_appinsights(config):
 
 @pytest.fixture()
 def config():
-    backup_config = server_config.copy()
+    backup_config = server_config.model_copy()
     try:
         yield server_config
     finally:
-        for field in server_config.__fields__:
+        for field in server_config.model_fields:
             setattr(server_config, field, getattr(backup_config, field))
 
 
