@@ -8,7 +8,6 @@ from types import ModuleType
 from typing import Any, Callable, Dict, NamedTuple, Optional
 
 import flask
-from inference_schema.schema_util import is_schema_decorated
 
 from .exceptions import AzmlinfsrvError
 from .input_parsers import InputParserBase, JsonStringInput, ObjectInput, RawRequestInput
@@ -141,7 +140,7 @@ class UserScript:
         return TimedResult(elapsed_ms=timer.elapsed_ms, input=run_parameters, output=run_output)
 
     def _analyze_run(self) -> None:
-        # Inspect the the run() function. Make sure it is declared in the right way.
+        # Inspect the run() function. Make sure it is declared in the right way.
         run_params = inspect.signature(self._user_run).parameters.values()
         if any(param.kind not in [param.KEYWORD_ONLY, param.POSITIONAL_OR_KEYWORD] for param in run_params):
             raise UserScriptError("run() cannot accept positional-only arguments, *args, or **kwargs.")
@@ -162,18 +161,10 @@ class UserScript:
             else:
                 raise UserScriptError("run() needs to accept an argument for input data.")
 
-        # Decide the input parser we need for user's run() function.
-        if aml_request._rawHttpRequested and is_schema_decorated(self._user_run):
-            raise UserScriptError("run() cannot be decorated with both @rawhttp and @input_schema")
-        elif aml_request._rawHttpRequested:
+        # InferenceSchema support removed: always use JSON string input parser
+        if aml_request._rawHttpRequested:
             self.input_parser = RawRequestInput(first_param.name)
             logger.info("run() is decorated with @rawhttp. Server will invoke it with the flask request object.")
-        elif is_schema_decorated(self._user_run):
-            self.input_parser = ObjectInput(run_params)
-            logger.info(
-                "run() is decorated with @input_schema. Server will invoke it with the following arguments: "
-                f"{', '.join(param.name for param in run_params)}."
-            )
         else:
             self.input_parser = JsonStringInput(first_param.name)
             logger.info("run() is not decorated. Server will invoke it with the input in JSON string.")

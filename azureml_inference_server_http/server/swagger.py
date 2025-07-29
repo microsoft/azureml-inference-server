@@ -6,12 +6,7 @@ import logging
 import os
 from typing import Any, Callable, ClassVar, Dict, Iterable, List, Optional, Set, Type, TypeVar
 
-from inference_schema.schema_util import (
-    get_input_schema,
-    get_output_schema,
-    get_supported_versions,
-    is_schema_decorated,
-)
+
 
 from .config import config
 from .exceptions import AzmlAssertionError
@@ -143,24 +138,13 @@ class _SwaggerBuilder:
         return self._read_swagger(f"swagger{self.__version__}.json")
 
     def _generate_swagger(self) -> Optional[dict]:
-        run_function = self.user_script.get_run_function()
-
-        # If request swagger version not supported, this will remain None
-        if all(version not in get_supported_versions(run_function) for version in self.__version_aliases__):
-            return None
-
-        if is_schema_decorated(run_function):
-            # run() is decorated. Get the input and output schema from inference-schema.
-            input_schema = get_input_schema(run_function)
-            output_schema = get_output_schema(run_function)
-        else:
-            # run() is not decorated. Set input and output schemas to empty objects.
-            input_schema = output_schema = {"type": "object", "example": {}}
+        # InferenceSchema support removed: always use generic object schema
+        input_schema = output_schema = {"type": "object", "example": {}}
         template_path = os.path.join(self.server_root, self.swagger_template)
         with open(template_path, "r", encoding="utf-8") as f:
             swagger_spec_str = f.read()
 
-        # Substitude special values in the template JSON.
+        # Substitute special values in the template JSON.
         swagger_spec_str = (
             swagger_spec_str.replace("$SERVICE_NAME$", config.service_name)
             .replace("$SERVICE_VERSION$", config.service_version)

@@ -67,7 +67,6 @@ setuptools.setup(
         "flask~=3.1.0",
         "flask-cors~=6.0.0",
         'gunicorn>=23.0.0; platform_system!="Windows"',
-        "inference-schema~=1.8.0",
         "opentelemetry-sdk==1.33.0",
         "opentelemetry-api==1.33.0",
         "opentelemetry-semantic-conventions",
