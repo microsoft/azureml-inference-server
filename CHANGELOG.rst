@@ -1,3 +1,20 @@
+1.5.0 (2025-08-13)
+~~~~~~~~~~~~~~~~~~
+Azureml_Inference_Server_Http 1.5.0 (2025-08-13)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Enhancements
+------------
+
+- In Pydantic version 2, the @root_validator decorator has been deprecated. Migrated to the new @model_validator decorator,
+  which provides similar functionality but aligns better with the updated design of Pydantic.
+
+- Migrated from OpenCensus to OpenTelemetry as recommened in the Azure ecosystem. OpenCensus is retired and no longer maintained, 
+  whereas OpenTelemetry is the actively supported. OpenTelemetry offers enhanced functionality, better integration with Azure Monitor, 
+  and a unified framework for collecting metrics, traces, and logs, ensuring future-proof observability.
+
+  Sunsetting details of OpenCensus can be found here: https://opentelemetry.io/blog/2023/sunsetting-opencensus/
+
 1.4.1 (2025-06-10)
 ~~~~~~~~~~~~~~~~~~
 Azureml_Inference_Server_Http 1.4.1 (2025-06-10)
