@@ -145,7 +145,7 @@ class AMLInferenceServerConfig(BaseSettings):
     debug_port: Optional[int] = pydantic.Field(default=None, alias="AZUREML_DEBUG_PORT")
 
     # Check if extra keys are there in the config file
-    @pydantic.root_validator(pre=True)
+    @pydantic.model_validator(mode="before")
     def check_extra_keys(cls, values: Dict[str, Any]):
         supported_keys = alias_mapping.values()
         extra_keys = []
