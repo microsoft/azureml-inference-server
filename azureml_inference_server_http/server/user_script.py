@@ -8,10 +8,9 @@ from types import ModuleType
 from typing import Any, Callable, Dict, NamedTuple, Optional
 
 import flask
-from inference_schema.schema_util import is_schema_decorated
 
 from .exceptions import AzmlinfsrvError
-from .input_parsers import InputParserBase, JsonStringInput, ObjectInput, RawRequestInput
+from .input_parsers import InputParserBase, JsonStringInput, RawRequestInput
 from .utils import timeout, Timer
 from ..api import aml_request
 
@@ -93,12 +92,8 @@ class UserScript:
         # can't skip over the driver module because they perform some additional tasks. For example, the Designer
         # team's driver script generates swagger.json for their users.
         maybe_user_module = getattr(user_module, "driver_module", None)
-        if isinstance(maybe_user_module, ModuleType) and hasattr(maybe_user_module, "run"):
-            # The user module is beind a driver module. To the best of my knowledge none of the run() in the driver
-            # module has any special logic -- they simply forward the call to the run() of the actual score script. The
-            # only problem is that they don't pass the arguments correctly when it is decorated with inference-schema.
-            # Until the driver modules are fixed (or, better, removed), we call the run() of the actual score script
-            # directly to lessen the impact.
+        if isinstance(maybe_user_module, ModuleType) and hasattr(maybe_user_module, "run"):  # pragma: no cover
+            # The user module is behind a driver module.
             self._user_run = maybe_user_module.run
             logger.info(
                 f"Found driver script at {user_module.__file__} and the score script at {maybe_user_module.__file__}"
@@ -163,17 +158,9 @@ class UserScript:
                 raise UserScriptError("run() needs to accept an argument for input data.")
 
         # Decide the input parser we need for user's run() function.
-        if aml_request._rawHttpRequested and is_schema_decorated(self._user_run):
-            raise UserScriptError("run() cannot be decorated with both @rawhttp and @input_schema")
-        elif aml_request._rawHttpRequested:
+        if aml_request._rawHttpRequested:
             self.input_parser = RawRequestInput(first_param.name)
             logger.info("run() is decorated with @rawhttp. Server will invoke it with the flask request object.")
-        elif is_schema_decorated(self._user_run):
-            self.input_parser = ObjectInput(run_params)
-            logger.info(
-                "run() is decorated with @input_schema. Server will invoke it with the following arguments: "
-                f"{', '.join(param.name for param in run_params)}."
-            )
         else:
             self.input_parser = JsonStringInput(first_param.name)
             logger.info("run() is not decorated. Server will invoke it with the input in JSON string.")

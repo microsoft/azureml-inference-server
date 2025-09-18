@@ -6,13 +6,6 @@ import logging
 import os
 from typing import Any, Callable, ClassVar, Dict, Iterable, List, Optional, Set, Type, TypeVar
 
-from inference_schema.schema_util import (
-    get_input_schema,
-    get_output_schema,
-    get_supported_versions,
-    is_schema_decorated,
-)
-
 from .config import config
 from .exceptions import AzmlAssertionError
 from .user_script import UserScript
@@ -45,31 +38,16 @@ class Swagger:
         # Maps a swagger version alias to the swagger JSON.
         self.swagger_jsons: Dict[str, dict] = {}
 
-        # Get the swagger from each builder, and populate `supported_version` and `unsupported_versions`.
-        unsupported_versions = []
+        # Get the swagger from each builder.
         for builder_cls in self._builder_classes:
             builder = builder_cls(app_root, server_root, user_script)
             swagger_json = builder.get_swagger()
-            if swagger_json is not None:
-                for version in builder.__version_aliases__:
-                    self.swagger_jsons[version] = swagger_json
+            for version in builder.__version_aliases__:
+                self.swagger_jsons[version] = swagger_json
 
-                self.supported_versions.append(builder_cls.__version__)
-            else:
-                unsupported_versions.append(builder_cls.__version__)
-
+            self.supported_versions.append(builder_cls.__version__)
         self.supported_versions.sort()
-        unsupported_versions.sort()
-
-        if self.supported_versions and unsupported_versions:
-            logger.info(
-                f"Swaggers are prepared for versions [{', '.join(self.supported_versions)}] "
-                f"and skipped for versions [{', '.join(unsupported_versions)}]."
-            )
-        elif self.supported_versions:
-            logger.info(f"Swaggers are prepared for the following versions: [{', '.join(self.supported_versions)}].")
-        elif unsupported_versions:
-            logger.info("No swagger is prepared.")
+        logger.info(f"Swaggers are prepared for the following versions: [{', '.join(self.supported_versions)}].")
 
     @classmethod
     def _register_builder(
@@ -120,7 +98,7 @@ class _SwaggerBuilder:
     ) -> None:  # pragma: no cover
         raise AzmlAssertionError("_update_definitions method is not overridden")
 
-    def get_swagger(self) -> Optional[dict]:
+    def get_swagger(self) -> dict:
         swagger_file = self._read_user_swagger()
         if not swagger_file:
             return self._generate_swagger()
@@ -142,20 +120,10 @@ class _SwaggerBuilder:
     def _read_user_swagger(self) -> Optional[dict]:
         return self._read_swagger(f"swagger{self.__version__}.json")
 
-    def _generate_swagger(self) -> Optional[dict]:
-        run_function = self.user_script.get_run_function()
+    def _generate_swagger(self) -> dict:
+        # run() is not decorated. Set input and output schemas to empty objects.
+        input_schema = output_schema = {"type": "object", "example": {}}
 
-        # If request swagger version not supported, this will remain None
-        if all(version not in get_supported_versions(run_function) for version in self.__version_aliases__):
-            return None
-
-        if is_schema_decorated(run_function):
-            # run() is decorated. Get the input and output schema from inference-schema.
-            input_schema = get_input_schema(run_function)
-            output_schema = get_output_schema(run_function)
-        else:
-            # run() is not decorated. Set input and output schemas to empty objects.
-            input_schema = output_schema = {"type": "object", "example": {}}
         template_path = os.path.join(self.server_root, self.swagger_template)
         with open(template_path, "r", encoding="utf-8") as f:
             swagger_spec_str = f.read()

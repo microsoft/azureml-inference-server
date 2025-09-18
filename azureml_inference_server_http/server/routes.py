@@ -202,12 +202,9 @@ def _after_request(response: Response) -> Response:
 def log_successful_request(timed_result: TimedResult):
     # This is ugly but we have to do this to maintain backwards compatibility. In the future we should simply log
     # `time_result.input` as-is.
-    if isinstance(main_blueprint.user_script.input_parser, (JsonStringInput, RawRequestInput)):
-        # This logs the raw request (probably in its repr() form) if @rawhttp is used. We should consider not logging
-        # this at all in the future.
-        model_input = next(iter(timed_result.input.values()))
-    else:
-        model_input = timed_result.input
+    # This logs the raw request (probably in its repr() form) if @rawhttp is used. We should consider not logging
+    # this at all in the future.
+    model_input = next(iter(timed_result.input.values()))
 
     main_blueprint.appinsights_client.send_model_data_log(
         g.request_id, g.client_request_id, model_input, timed_result.output

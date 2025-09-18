@@ -3,7 +3,7 @@
 
 import inspect
 import json
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 import flask
 
@@ -117,48 +117,3 @@ class JsonStringInput(InputParserBase):
             return {self.parameter_name: str(request.data, "utf-8")}
         except UnicodeDecodeError as ex:
             raise BadInput(f"Input cannot be decoded as UTF-8: {ex}") from None
-
-
-class ObjectInput(InputParserBase):
-    """Parse the body of the request as a JSON and pass the value in the value found in ``parameter_name`` to user's
-    run() function. An error is raised if ``parameter_name`` is not found in the body JSON. This is used when the
-    user's run function is decorated with @input_schema.
-    """
-
-    __slots__ = ["parameters"]
-
-    def __init__(self, parameters: List[inspect.Parameter]):
-        self.parameters = parameters
-
-    def _parse_get_input(self, request: flask.Request) -> Any:
-        parsed_body = self._parse_get_parameters(request)
-        return self._extract_parameters(parsed_body)
-
-    def _parse_post_input(self, request: flask.Request) -> Any:
-        if not request.is_json:
-            raise UnsupportedInput("Expects Content-Type to be application/json")
-
-        body = request.get_data()
-        try:
-            json_body = json.loads(body)
-        except json.JSONDecodeError as ex:
-            if body:
-                raise BadInput(f"POST body could not be decoded as JSON: {ex}") from None
-            else:
-                raise BadInput("POST body is empty. Expecting a JSON dictionary.") from None
-
-        if not isinstance(json_body, dict):
-            raise BadInput("POST body should be a JSON dictionary.")
-
-        return self._extract_parameters(json_body)
-
-    def _extract_parameters(self, body: Dict) -> Dict[str, Any]:
-        parameters: Dict[str, Any] = {}
-        for parameter in self.parameters:
-            input_value = body.get(parameter.name, parameter.default)
-            if input_value is inspect.Parameter.empty:
-                raise BadInput(f"A value is not provided for the {parameter.name!r} parameter.")
-
-            parameters[parameter.name] = input_value
-
-        return parameters

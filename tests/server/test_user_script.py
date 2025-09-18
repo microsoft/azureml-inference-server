@@ -11,8 +11,6 @@ import time
 import unittest.mock
 
 import flask
-from inference_schema.parameter_types.standard_py_parameter_type import StandardPythonParameterType
-from inference_schema.schema_decorators import input_schema
 import pytest
 
 from azureml_inference_server_http.api.aml_request import rawhttp
@@ -62,34 +60,13 @@ def test_user_script_load_main(
     """Ensure we can load user scripts with ``import main``"""
 
     monkeypatch.syspath_prepend(tmp_path)
-    shutil.copyfile(data_path("user_scripts/simple_schema.py"), tmp_path / "main.py")
+    shutil.copyfile(data_path("user_scripts/simple.py"), tmp_path / "main.py")
 
     app.azml_blueprint.setup()
 
     response = client.get_score({"num": 10})
     assert response.status_code == 200
-    assert response.json == 20
-
-
-def test_user_script_load_driver(app: flask.Flask, client: TestingClient):
-    """Ensure we can correctly load the user script when it comes with a driver script."""
-
-    # These environment variables are set by simple_schema_driver.py and simple_schema.py. Unset them so we can be sure
-    # the scripts are called.
-    os.environ.pop("simple_schema_driver_init_called", None)
-    os.environ.pop("simple_schema_init_called", None)
-
-    app.azml_blueprint.user_script = app.user_script = TestingUserScript("simple_schema_driver.py")
-    app.azml_blueprint.setup()
-
-    # Ensure the init() of the driver module and that of the actual score script are called.
-    assert os.environ["simple_schema_driver_init_called"] == "1"
-    assert os.environ["simple_schema_init_called"] == "1"
-
-    # Ensure the run() of the driver module is not called. Only the run() of the score script is called.
-    response = client.get_score({"num": 10})
-    assert response.status_code == 200
-    assert response.json == 20
+    assert response.json == {"num": 10}
 
 
 @pytest.mark.xfail(reason="It throws SystemExit today. We should propagate the actual exception.")
@@ -335,138 +312,6 @@ def test_user_script_input_rawhttp_default_parameter(app: flask.Flask, client: T
     assert response.json == "red"
 
 
-# run() decorated with inference-schema
-
-
-@pytest.mark.parametrize("method", ["GET", "POST"])
-def test_user_script_input_schema(app: flask.Flask, client: TestingClient, method: str):
-    @app.set_user_run
-    @input_schema("num", StandardPythonParameterType(1))
-    def run(num):
-        pass
-
-    response = client.score(method, {"num": 10})
-    assert response.status_code == 200
-
-
-def test_user_script_input_schema_options(app: flask.Flask, client: TestingClient):
-    """An OPTIONS request to a schema-decorated run() should return 200."""
-
-    @app.set_user_run
-    @input_schema("num", StandardPythonParameterType(1))
-    def run(num):
-        pass
-
-    response = client.options_score()
-    assert response.status_code == 200
-    assert response.data == b""
-
-
-@pytest.mark.parametrize("method", ["GET", "POST"])
-def test_user_script_input_schema_extra_param(app: flask.Flask, client: TestingClient, method: str):
-    """Ensure that the server ignores the extra parameters with @input_schema."""
-
-    @app.set_user_run
-    @input_schema("num", StandardPythonParameterType(1))
-    def run(num):
-        pass
-
-    input_data = {"num": 10, "nums": [10, 20]}
-    response = client.score(method, input_data)
-    assert response.status_code == 200
-    assert app.last_run.input == {"num": 10}
-
-
-@pytest.mark.parametrize("method", ["GET", "POST"])
-def test_user_script_input_schema_missing_param(app: flask.Flask, client: TestingClient, method: str):
-    """When a required parameter isn't provided, ensure we provide a readable error message."""
-
-    @app.set_user_run
-    @input_schema("num", StandardPythonParameterType(1))
-    def run(num):
-        pass
-
-    response = client.score(method, {"a": 10})
-    assert response.status_code == 400
-    assert response.json == {"message": "A value is not provided for the 'num' parameter."}
-
-
-@pytest.mark.parametrize("method", ["GET", "POST"])
-def test_user_script_input_schema_stacked(app: flask.Flask, client: TestingClient, method: str):
-    """Ensure we support multiple layers of @input_schema."""
-
-    @app.set_user_run
-    @input_schema("num", StandardPythonParameterType(1))
-    @input_schema("nums", StandardPythonParameterType([1, 2]))
-    def run(num, nums):
-        pass
-
-    input_data = {"num": 10, "nums": [10, 20]}
-    response = client.score(method, input_data)
-    assert response.status_code == 200
-    assert app.last_run.input == input_data
-
-
-def test_user_script_input_schema_not_dict(app: flask.Flask, client: TestingClient):
-    """When run() is decorated with @input_schema(), ensure a clear error message is provided if we don't receive a
-    dictionary input"""
-
-    @app.set_user_run
-    @input_schema("num", StandardPythonParameterType(1))
-    def run(num):
-        pass
-
-    response = client.post_score([1, 2, 3])
-    assert response.status_code == 400
-    assert response.json == {"message": "POST body should be a JSON dictionary."}
-
-
-def test_user_script_input_schema_empty_body(app: flask.Flask, client: TestingClient):
-    """Ensure a clear error message is provided when we receive an empty body for a @input_schema-decorated run()."""
-
-    @app.set_user_run
-    @input_schema("num", StandardPythonParameterType(1))
-    def run(num):
-        pass
-
-    response = client.post_score(data=b"", headers={"content-type": "application/json"})
-    assert response.status_code == 400
-    assert response.json == {"message": "POST body is empty. Expecting a JSON dictionary."}
-
-
-def test_user_script_input_schema_not_json(app: flask.Flask, client: TestingClient):
-    """Ensure a clear error message is provided when the user doesn't send the content-type header for a
-    @input_schema-decorated run()."""
-
-    @app.set_user_run
-    @input_schema("num", StandardPythonParameterType(1))
-    def run(num):
-        pass
-
-    response = client.post_score(data="")
-    assert response.status_code == 415
-    assert response.json == {"message": "Expects Content-Type to be application/json"}
-
-
-def test_user_script_input_schema_bad_json(app: flask.Flask, client: TestingClient):
-    """Ensure a clear error message is provided when the user sends a malformed JSON string for a
-    @input_schema-decorated run()."""
-
-    @app.set_user_run
-    @input_schema("num", StandardPythonParameterType(1))
-    def run(num):
-        pass
-
-    response = client.post_score(data=b"{", headers={"content-type": "application/json"})
-    assert response.status_code == 400
-    assert response.json == {
-        "message": (
-            "POST body could not be decoded as JSON: "
-            "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
-        )
-    }
-
-
 @pytest.mark.parametrize("method", ["GET", "POST"])
 @pytest.mark.parametrize("content_type", [None, "", "application/json", "text/plain", "application/octet-stream"])
 def test_user_script_input_json_content_type(app: flask.Flask, client: TestingClient, method: str, content_type: str):
@@ -481,42 +326,6 @@ def test_user_script_input_json_content_type(app: flask.Flask, client: TestingCl
     response = client.score(method, input_data=payload, content_type=content_type)
     assert response.status_code == 200
     assert response.json == '{"data": "some plain text"}'
-
-
-@pytest.mark.parametrize("method", ["GET", "POST"])
-def test_user_script_input_schema_default_parameter(app: flask.Flask, client: TestingClient, method: str):
-    """Ensure we don't require the parameters that have default values."""
-
-    @app.set_user_run
-    @input_schema("num", StandardPythonParameterType(1))
-    def run(num=1):
-        return num
-
-    response = client.score(method, input_data={})
-    assert response.status_code == 200
-    assert response.json == 1
-
-    response = client.score(method, input_data={"num": 10})
-    assert response.status_code == 200
-    assert response.json == 10
-
-    @app.set_user_run
-    @input_schema("num", StandardPythonParameterType(1))
-    @input_schema("size", StandardPythonParameterType(1))
-    def multi_input_run(num, size=10, color="red"):
-        return [num, size, color]
-
-    response = client.score(method, input_data={"num": 1})
-    assert response.status_code == 200
-    assert response.json == [1, 10, "red"]
-
-    response = client.score(method, input_data={"num": 1, "size": 5})
-    assert response.status_code == 200
-    assert response.json == [1, 5, "red"]
-
-    response = client.score(method, input_data={"num": 1, "color": "blue"})
-    assert response.status_code == 200
-    assert response.json == [1, 10, "blue"]
 
 
 # run() Exceptions

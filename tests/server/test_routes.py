@@ -4,8 +4,6 @@
 import logging
 
 import flask
-from inference_schema.parameter_types.standard_py_parameter_type import StandardPythonParameterType
-from inference_schema.schema_decorators import input_schema
 import pytest
 
 from azureml_inference_server_http.api.aml_response import AMLResponse
@@ -31,9 +29,9 @@ def test_routes_request_id(app: flask.Flask, client: TestingClient, to_error: bo
     """Ensure the request id is generated and propagated back to the user.."""
 
     @app.set_user_run
-    @input_schema("error", StandardPythonParameterType(False))
-    def run(error):
-        if error:
+    def run(data):
+        import json
+        if json.loads(data).get("error"):
             raise RuntimeError
 
     # A x-request-id is not provided. Server should generate one.
@@ -88,9 +86,9 @@ def test_routes_client_request_id(app: flask.Flask, client: TestingClient, to_er
     correctness when none, or one, or both of these values are provided."""
 
     @app.set_user_run
-    @input_schema("error", StandardPythonParameterType(False))
-    def run(error):
-        if error:
+    def run(data):
+        import json
+        if json.loads(data).get("error"):
             raise RuntimeError
 
     # When the client doesn't provide x-ms-client-request-id, server shouldn't generate it.
