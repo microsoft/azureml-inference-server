@@ -1,3 +1,13 @@
+1.5.1 (2025-12-18)
+~~~~~~~~~~~~~~~~~~
+Azureml_Inference_Server_Http 1.5.1 (2025-12-18)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Enhancements
+------------
+
+- Upgraded Pydantic package to 2.12
+
 1.5.0 (2025-08-13)
 ~~~~~~~~~~~~~~~~~~
 Azureml_Inference_Server_Http 1.5.0 (2025-08-13)
