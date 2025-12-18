@@ -73,7 +73,7 @@ setuptools.setup(
         "opentelemetry-semantic-conventions",
         "azure-monitor-opentelemetry-exporter",
         'psutil<6.0.0; platform_system=="Windows"',
-        "pydantic~=2.11.0",
+        "pydantic~=2.12.0",
         "pydantic-settings",
         'waitress>=3.0.1; platform_system=="Windows"',
         "werkzeug>=3.0.3",  # Werkzeug 3.x breaks back-compatibility of urls package
