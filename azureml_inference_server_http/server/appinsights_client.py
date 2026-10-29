@@ -153,7 +153,7 @@ class AppInsightsClient(object):
             response_value = None
 
         successful = response.status_code < 400
-        formatted_start_time = start_datetime.isoformat() + "Z"
+        formatted_start_time = start_datetime.isoformat().replace("+00:00", "Z")
         try:
             attributes = {
                 "Container Id": self._container_id,
