@@ -6,7 +6,6 @@ import re
 
 import setuptools
 
-
 PACKAGE_NAME = "azureml-inference-server-http"
 PACKAGE_DIR = PACKAGE_NAME.replace("-", "_")
 VERSION_FILENAME = "_version.py"
