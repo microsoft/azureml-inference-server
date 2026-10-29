@@ -89,7 +89,7 @@ setuptools.setup(
             "numpy",
             "pandas",
             "pre-commit",
-            "pytest",
+            "pytest<9",
             "pytest-asyncio",
             "pytest-benchmark",
             "pytest-cov",
