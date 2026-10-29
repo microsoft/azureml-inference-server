@@ -66,7 +66,7 @@ setuptools.setup(
         'gunicorn>=23.0.0; platform_system!="Windows"',
         "inference-schema~=1.8.0",
         "opentelemetry-sdk==1.33.0",
-        "opentelemetry-api==1.33.0",
+        "opentelemetry-api==1.45.1",
         "opentelemetry-semantic-conventions",
         "azure-monitor-opentelemetry-exporter",
         'psutil<6.0.0; platform_system=="Windows"',
