@@ -17,7 +17,6 @@ from .config import config
 from .exceptions import AzmlAssertionError
 from .user_script import UserScript
 
-
 logger = logging.getLogger("azmlinfsrv.swagger")
 
 _SwaggerBuilderTypeT = TypeVar("_SwaggerBuilderTypeT", bound="Type[_SwaggerBuilder]")

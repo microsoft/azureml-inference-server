@@ -9,6 +9,7 @@ forwards the message according to a simple rule set:
 2. If the message was intended to be printed to any other file, the message
    is forwarded as provided to the builtin Python print function.
 """
+
 import builtins
 import functools
 import logging
