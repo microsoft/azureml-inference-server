@@ -109,6 +109,7 @@ def test_appinsights_e2e(config, app):
             continue
 
         table = query_resp.tables[0]
+        print(table.rows)
         df = pd.DataFrame(data=table.rows, columns=table.columns)
 
         # Should only have one message that matches. May have 0 if the message
