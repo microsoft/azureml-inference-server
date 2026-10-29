@@ -50,8 +50,6 @@ setuptools.setup(
     classifiers=[
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Intended Audience :: Developers",
@@ -61,7 +59,7 @@ setuptools.setup(
         "Operating System :: MacOS",
         "Operating System :: POSIX :: Linux",
     ],
-    python_requires=">=3.9",
+    python_requires=">=3.11",
     install_requires=[
         "flask~=3.1.0",
         "flask-cors~=6.0.0",
