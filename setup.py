@@ -67,6 +67,7 @@ setuptools.setup(
         "inference-schema~=1.8.0",
         "opentelemetry-sdk>=1.33.0,<2.0.0",
         "opentelemetry-api>=1.33.0,<2.0.0",
+        "opentelemetry-instrumentation-logging>=0.65b0",
         "opentelemetry-semantic-conventions",
         "azure-monitor-opentelemetry-exporter",
         'psutil<6.0.0; platform_system=="Windows"',

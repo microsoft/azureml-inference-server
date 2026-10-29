@@ -3,6 +3,7 @@
 
 from datetime import timedelta
 import json
+import logging
 import os
 import time
 from unittest.mock import Mock
@@ -18,6 +19,41 @@ import pytest
 from azureml_inference_server_http.api.aml_response import AMLResponse
 
 AML_LOG_ANALYTICS_WORKSPACE_ID = os.environ.get("AML_LOG_ANALYTICS_WORKSPACE_ID", None)
+
+
+def test_appinsights_log_handler(config, monkeypatch):
+    from azureml_inference_server_http.server import appinsights_client
+    from opentelemetry.instrumentation.logging.handler import LoggingHandler
+
+    config.app_insights_enabled = False
+    client = appinsights_client.AppInsightsClient()
+    provider = Mock()
+    monkeypatch.setattr(appinsights_client, "LoggerProvider", Mock(return_value=provider))
+    monkeypatch.setattr(appinsights_client, "set_logger_provider", Mock())
+    monkeypatch.setattr(appinsights_client, "get_logger_provider", Mock(return_value=provider))
+    monkeypatch.setattr(appinsights_client, "AzureMonitorLogExporter", Mock())
+    monkeypatch.setattr(appinsights_client, "BatchLogRecordProcessor", Mock())
+    root_handlers = list(logging.getLogger().handlers)
+
+    try:
+        client.init_otel_log("unused", None)
+        assert isinstance(client.azureLogHandler, LoggingHandler)
+        assert client.azureLogHandler in appinsights_client.logger.handlers
+        assert client.azureLogHandler in logging.getLogger("azmlinfsrv.print").handlers
+        assert logging.getLogger().handlers == root_handlers
+
+        record = logging.LogRecord(
+            "azmlinfsrv.print", logging.INFO, __file__, 1, "test message", (), None, "print_to_logger"
+        )
+        record.custom_dimensions = {"Request Id": "test-request"}
+        client.azureLogHandler.emit(record)
+
+        emitted_record = provider.get_logger.return_value.emit.call_args.args[0]
+        assert emitted_record.body == "test message"
+        assert emitted_record.attributes["code.function.name"] == "print_to_logger"
+        assert emitted_record.attributes["custom_dimensions"] == {"Request Id": "test-request"}
+    finally:
+        client.close()
 
 
 @pytest.mark.online

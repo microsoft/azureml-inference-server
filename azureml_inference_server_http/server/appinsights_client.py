@@ -12,9 +12,10 @@ from azure.monitor.opentelemetry.exporter import AzureMonitorLogExporter, AzureM
 from opentelemetry.sdk.resources import get_aggregated_resources, ProcessResourceDetector
 from opentelemetry.semconv.resource import ResourceAttributes
 from opentelemetry import trace
+from opentelemetry.instrumentation.logging.handler import LoggingHandler
 from opentelemetry.sdk.trace import TracerProvider, Resource
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.sdk._logs import LoggingHandler, LoggerProvider
+from opentelemetry.sdk._logs import LoggerProvider
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 from opentelemetry._logs import set_logger_provider, get_logger_provider
 from opentelemetry.sdk.trace.sampling import ALWAYS_ON
@@ -93,7 +94,11 @@ class AppInsightsClient(object):
         get_logger_provider().add_log_record_processor(log_processor)
 
         # Add log handler
-        self.azureLogHandler = LoggingHandler(level=logging.INFO)
+        self.azureLogHandler = LoggingHandler(
+            level=logging.INFO,
+            logger_provider=get_logger_provider(),
+            log_code_attributes=True,
+        )
         logger.addHandler(self.azureLogHandler)
         logging.getLogger("azmlinfsrv.print").addHandler(self.azureLogHandler)
 
