@@ -1,3 +1,11 @@
+Unreleased
+~~~~~~~~~~
+
+Breaking Changes
+----------------
+
+- Dropped support for Python 3.9 and 3.10. Python 3.11 or later is now required.
+
 1.5.1 (2025-12-18)
 ~~~~~~~~~~~~~~~~~~
 Azureml_Inference_Server_Http 1.5.1 (2025-12-18)
