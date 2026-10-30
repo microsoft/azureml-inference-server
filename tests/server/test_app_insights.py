@@ -124,7 +124,11 @@ def test_appinsights_e2e(config, app, caplog):
         | where tostring(Properties["code.function.name"]) == "print_to_logger"
         | where Message == '{log_message}'
     """
-    logger.info("Polling workspace every 10 seconds for up to 300 seconds with a rolling 5-minute timespan.")
+    query_timespan = timedelta(minutes=15)
+    logger.info(
+        "Polling workspace every 10 seconds for up to 300 seconds with a rolling %s query window.",
+        query_timespan,
+    )
     logger.info("Kusto query:%s", query)
 
     # Check every 10 seconds for up to 5 minutes if App Insights has received
@@ -138,7 +142,7 @@ def test_appinsights_e2e(config, app, caplog):
         attempts += 1
         query_started = time.monotonic()
         query_end = datetime.now(timezone.utc)
-        query_start = query_end - timedelta(minutes=5)
+        query_start = query_end - query_timespan
         logger.info(
             "Query attempt %d: elapsed_seconds=%.1f, approximate_utc_window=[%s, %s], "
             "message_age_seconds=%.1f, emission_within_window=%s",
@@ -153,7 +157,7 @@ def test_appinsights_e2e(config, app, caplog):
             query_resp = log_client.query_workspace(
                 AML_LOG_ANALYTICS_WORKSPACE_ID,
                 query,
-                timespan=timedelta(minutes=5),
+                timespan=query_timespan,
             )
         except AzureError as exc:
             logger.error(
@@ -217,7 +221,7 @@ def test_appinsights_e2e(config, app, caplog):
     logger.error(
         "App Insights verification timed out: elapsed_seconds=%.1f, attempts=%d, last_status=%s, "
         "last_matching_rows=%s, workspace_id=%s, emitted_at=%s, message=%s. "
-        "The rolling 5-minute query window may now exclude the message; check ingestion delay, "
+        "The query window may now exclude the message; check ingestion delay, "
         "the Application Insights workspace association, and the code.function.name filter.",
         time.monotonic() - start_time,
         attempts,
