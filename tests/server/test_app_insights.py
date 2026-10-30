@@ -59,6 +59,8 @@ def test_appinsights_log_handler(config, monkeypatch):
     finally:
         client.close()
 
+    provider.force_flush.assert_called_once()
+
 
 @pytest.mark.online
 def test_appinsights_e2e(config, app, caplog):

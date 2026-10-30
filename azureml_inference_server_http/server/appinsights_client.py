@@ -104,6 +104,7 @@ class AppInsightsClient(object):
 
     def close(self):
         if self.azureLogHandler:
+            get_logger_provider().force_flush()
             logger.removeHandler(self.azureLogHandler)
             logging.getLogger("azmlinfsrv.print").removeHandler(self.azureLogHandler)
 
