@@ -561,7 +561,7 @@ def test_user_script_run_timer(app: flask.Flask, client: TestingClient, latency_
 
     # Increase the tolerence for Windows because the latency fluctuates quite a bit. We need subtract `TOLERANCE` from
     # the lower bound because the duration passed to time.sleep() is not a lower bound in Windows.
-    TOLERANCE = 20 if os.name == "nt" else 0
+    TOLERANCE = 50 if os.name == "nt" else 0
 
     # This is the time spent on the entire request (server + user script).
     start_time = time.perf_counter()
