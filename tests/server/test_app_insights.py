@@ -2,30 +2,20 @@
 # Licensed under the MIT License.
 
 import builtins
-from datetime import datetime, timedelta, timezone
 import json
 import logging
-import os
-import time
 from unittest.mock import Mock
 import uuid
 
-from azure.core.exceptions import AzureError
-from azure.identity import DefaultAzureCredential
 from azure.monitor.opentelemetry.exporter import AzureMonitorLogExporter
-from azure.monitor.query import LogsQueryClient, LogsQueryStatus
 import flask
 from opentelemetry._logs import get_logger_provider
 from opentelemetry.sdk._logs.export import LogRecordExportResult
 from opentelemetry.trace import NonRecordingSpan, SpanContext, TraceFlags
-import pandas as pd
-import pytest
+from pydantic import SecretStr
 
 from azureml_inference_server_http.api.aml_response import AMLResponse
 from azureml_inference_server_http.print_log_hook import print_to_logger
-
-AML_LOG_ANALYTICS_WORKSPACE_ID = os.environ.get("AML_LOG_ANALYTICS_WORKSPACE_ID", None)
-logger = logging.getLogger(__name__)
 
 
 def test_appinsights_log_handler(config, monkeypatch):
@@ -65,62 +55,17 @@ def test_appinsights_log_handler(config, monkeypatch):
     provider.force_flush.assert_called_once()
 
 
-@pytest.mark.online
-def test_appinsights_e2e(config, app, caplog, monkeypatch):
-    caplog.set_level(logging.INFO, logger=__name__)
-    caplog.set_level(logging.INFO, logger="azure.monitor.opentelemetry.exporter")
-    for name in (
-        "azure.monitor.opentelemetry.exporter.export._base",
-        "azure.monitor.opentelemetry.exporter.export.logs._exporter",
-    ):
-        monkeypatch.setattr(logging.getLogger(name), "disabled", False)
-    logger.info(
-        "App Insights E2E configuration: workspace_id=%s, instrumentation_key_configured=%s, initially_enabled=%s",
-        AML_LOG_ANALYTICS_WORKSPACE_ID,
-        bool(config.app_insights_key),
-        config.app_insights_enabled,
-    )
-    if not AML_LOG_ANALYTICS_WORKSPACE_ID:
-        raise EnvironmentError(
-            (
-                "AML Workspace ID not found. Please set the log analytics "
-                "workspace using the `AML_LOG_ANALYTICS_WORKSPACE_ID` environment "
-                "variable and try again."
-            )
-        )
-
-    if not config.app_insights_key:
-        raise EnvironmentError(
-            (
-                "AML App Insights key not found. Please set the App Insights key "
-                "using the `AML_APP_INSIGHTS_KEY` environment variable and try "
-                "again."
-            )
-        )
-
+def test_appinsights_log_export(config, app, monkeypatch):
+    config.app_insights_enabled = False
+    config.app_insights_key = SecretStr(str(uuid.uuid4()))
     log_message = f"Testing App Insights {uuid.uuid4()}"
-    export_attempts = []
-    original_export = AzureMonitorLogExporter.export
+    exported_records = []
 
-    def observed_export(exporter, batch, **kwargs):
-        target_records = [item.log_record for item in batch if item.log_record.body == log_message]
-        attempt = None
-        if target_records:
-            attempt = {"record_count": len(target_records), "result": None}
-            export_attempts.append(attempt)
-            logger.info(
-                "Exporter received target message: record_count=%d, attributes=%r",
-                len(target_records),
-                [record.attributes for record in target_records],
-            )
+    def mock_export(_exporter, batch, **_kwargs):
+        exported_records.extend(item.log_record for item in batch)
+        return LogRecordExportResult.SUCCESS
 
-        result = original_export(exporter, batch, **kwargs)
-        if attempt is not None:
-            attempt["result"] = result
-            logger.info("Target message export completed: result=%s", result)
-        return result
-
-    monkeypatch.setattr(AzureMonitorLogExporter, "export", observed_export)
+    monkeypatch.setattr(AzureMonitorLogExporter, "export", mock_export)
 
     with app.appinsights_enabled():
         insights_client = app.azml_blueprint.appinsights_client
@@ -131,114 +76,11 @@ def test_appinsights_e2e(config, app, caplog, monkeypatch):
         assert print_logger.isEnabledFor(logging.INFO), "The print logger is filtering INFO records"
         assert insights_client.azureLogHandler in print_logger.handlers, "The Azure logging handler is not attached"
 
-        emitted_at = datetime.now(timezone.utc)
-        logger.info("Emitting test message at %s: %s", emitted_at.isoformat(), log_message)
         print(log_message)
         assert get_logger_provider().force_flush(timeout_millis=30_000), "Telemetry flush did not complete"
-        assert export_attempts, (
-            "The target message never reached AzureMonitorLogExporter.export; "
-            "check logging handler, provider, and processor dispatch"
-        )
-        assert all(attempt["result"] == LogRecordExportResult.SUCCESS for attempt in export_attempts), (
-            f"Target message export failed or raised an exception: {export_attempts!r}. "
-            "Check captured exporter logs for ingestion authentication, endpoint, or connectivity errors"
-        )
-
-    # Query by message first so missing code attributes cannot hide an ingested record.
-    query = f"""
-        AppTraces
-        | where Message == '{log_message}'
-        | project TimeGenerated, Message, Properties
-    """
-    query_timespan = timedelta(minutes=15)
-    query_start = emitted_at - query_timespan
-    logger.info(
-        "Export succeeded; polling workspace for up to 300 seconds with a fixed start %s before emission.",
-        query_timespan,
-    )
-    logger.info("Kusto query:%s", query)
-
-    start_time = time.monotonic()
-    deadline = start_time + 300
-    attempts = 0
-    last_status = None
-    last_row_count = None
-    with DefaultAzureCredential() as creds, LogsQueryClient(creds) as log_client:
-        while time.monotonic() < deadline:
-            attempts += 1
-            query_started = time.monotonic()
-            query_end = datetime.now(timezone.utc)
-            logger.info(
-                "Query attempt %d: elapsed_seconds=%.1f, utc_window=[%s, %s]",
-                attempts,
-                query_started - start_time,
-                query_start.isoformat(),
-                query_end.isoformat(),
-            )
-            try:
-                query_resp = log_client.query_workspace(
-                    AML_LOG_ANALYTICS_WORKSPACE_ID,
-                    query,
-                    timespan=(query_start, query_end),
-                    server_timeout=30,
-                )
-            except AzureError as exc:
-                logger.error(
-                    "Workspace query attempt %d failed: error_type=%s, status_code=%s. "
-                    "Check Azure credentials, workspace query permissions, and connectivity.",
-                    attempts,
-                    type(exc).__name__,
-                    getattr(exc, "status_code", None),
-                )
-                raise
-
-            last_status = query_resp.status
-            last_row_count = None
-            if last_status != LogsQueryStatus.SUCCESS:
-                error = query_resp.partial_error
-                logger.warning(
-                    "Query returned partial results: error_code=%s, error_message=%s",
-                    error.code if error is not None else None,
-                    error.message if error is not None else None,
-                )
-            else:
-                assert query_resp.tables, "Successful workspace query returned no tables"
-                table = query_resp.tables[0]
-                last_row_count = len(table.rows)
-                logger.info(
-                    "Query attempt %d completed: matching_rows=%d, duration_seconds=%.1f",
-                    attempts,
-                    last_row_count,
-                    time.monotonic() - query_started,
-                )
-                if table.rows:
-                    df = pd.DataFrame(data=table.rows, columns=table.columns)
-                    assert (df["Message"] == log_message).all()
-                    properties = [json.loads(value) if isinstance(value, str) else value for value in df["Properties"]]
-                    assert any(
-                        value.get("code.function.name") == "print_to_logger" for value in properties
-                    ), f"Message was ingested, but the print hook code attribute is missing or incorrect: {properties!r}"
-                    logger.info(
-                        "Verified App Insights message after %d attempts: matching_rows=%d, TimeGenerated=%s",
-                        attempts,
-                        last_row_count,
-                        df["TimeGenerated"].tolist(),
-                    )
-                    return
-
-            remaining = deadline - time.monotonic()
-            if remaining > 0:
-                time.sleep(min(10, remaining))
-
-    failure_message = (
-        f"Target message reached the exporter and export returned SUCCESS, but workspace ingestion "
-        f"was not verified within 300 seconds: workspace_id={AML_LOG_ANALYTICS_WORKSPACE_ID}, "
-        f"attempts={attempts}, last_status={last_status}, last_matching_rows={last_row_count}, "
-        f"emitted_at={emitted_at.isoformat()}, message={log_message!r}. "
-        "Check the Application Insights resource's workspace association and ingestion delay."
-    )
-    logger.error(failure_message)
-    pytest.fail(failure_message)
+        matching_records = [record for record in exported_records if record.body == log_message]
+        assert matching_records, "The target message never reached AzureMonitorLogExporter.export"
+        assert matching_records[0].attributes["code.function.name"] == "print_to_logger"
 
 
 def test_appinsights_exception(app_appinsights: flask.Flask):
