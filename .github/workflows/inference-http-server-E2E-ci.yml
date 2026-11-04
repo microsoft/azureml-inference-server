@@ -21,18 +21,18 @@ jobs:
   azureml-inference-http-server-E2E-CI:
     strategy:
       matrix:
-        python_version: ['3.9', '3.10', '3.11', '3.12']
+        python_version: ['3.11', '3.12']
         pool_vmImage: ['ubuntu-latest', 'windows-latest']
     runs-on: ${{matrix.pool_vmImage}}
     environment: Server-CI
 
     steps:
       - name: Clone branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # Specify the python version
       - name: Set Python version
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: ${{matrix.python_version}}
 
@@ -50,7 +50,7 @@ jobs:
         shell: bash
 
       - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@7622c5bf3d112a72ab4fa3951c2aa5723d8ab92d # v2.25.0
         if: runner.os == 'Linux' && always()
         with:
           files: |
@@ -59,7 +59,7 @@ jobs:
           check_name: ${{matrix.pool_vmImage}} Python ${{matrix.python_version}}
 
       - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        uses: EnricoMi/publish-unit-test-result-action/composite@7622c5bf3d112a72ab4fa3951c2aa5723d8ab92d # v2.25.0
         if: runner.os == 'Windows' && always()
         with:
           files: |

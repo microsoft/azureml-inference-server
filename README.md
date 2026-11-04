@@ -6,6 +6,8 @@ This is the Flask server or the Sanic server code. The azureml-inference-server-
 
 ## Quick Start
 
+Python 3.11 or later is required. Python 3.11 and 3.12 are tested in CI.
+
 ### <a name="virtualenv">Setting your environment</a>
 
 - Clone the [azureml-inference-server](https://github.com/microsoft/azureml-inference-server) repository.

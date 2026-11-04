@@ -1,3 +1,23 @@
+1.6.0 (2026-11-03)
+~~~~~~~~~~~~~~~~~~
+
+Breaking Changes
+----------------
+
+- Dropped support for Python 3.9 and 3.10. Python 3.11 or later is now required.
+
+Enhancements
+------------
+
+- Updated the OpenTelemetry SDK and API requirements to >=1.45.1,<2.0.0 and added the OpenTelemetry logging instrumentation dependency.
+
+Fixes
+-----
+
+- Corrected the package license URL to point to the MIT license.
+- Updated Application Insights logging to use the OpenTelemetry instrumentation logging handler, include code attributes, and flush buffered logs before detaching the handler. Request telemetry now uses timezone-aware UTC timestamps.
+
+
 1.5.1 (2025-12-18)
 ~~~~~~~~~~~~~~~~~~
 Azureml_Inference_Server_Http 1.5.1 (2025-12-18)

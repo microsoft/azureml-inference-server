@@ -16,7 +16,6 @@ from azureml_inference_server_http.server.config import config
 from azureml_inference_server_http.server.swagger import Swagger
 from azureml_inference_server_http.server.user_script import TimedResult, UserScript
 
-
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 

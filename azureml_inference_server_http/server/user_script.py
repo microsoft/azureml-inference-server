@@ -15,7 +15,6 @@ from .input_parsers import InputParserBase, JsonStringInput, ObjectInput, RawReq
 from .utils import timeout, Timer
 from ..api import aml_request
 
-
 # XXX: Since we didn't configure the root logger, getLogger(__name__) would not write to the right handlers. Here we'll
 # reuse the logger that is configured in aml_blueprint.py, which is the logger named "azmlinfsrv".
 # Note that this is not the actual root logger (prior to Python 3.9)

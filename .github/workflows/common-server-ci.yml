@@ -21,7 +21,7 @@ jobs:
   Server-Tests:
     strategy:
       matrix:
-        python_version: ['3.9', '3.10', '3.11', '3.12']
+        python_version: ['3.11', '3.12']
         pool_vmImage: ['ubuntu-latest', 'windows-latest']
     runs-on: ${{matrix.pool_vmImage}}
     environment: Server-CI
@@ -30,16 +30,16 @@ jobs:
       APP_INSIGHTS_KEY: ${{ secrets.AML_APP_INSIGHTS_KEY }}
     steps:
       - name: Clone branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # Specify the python version
       - name: Set Python version
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: ${{matrix.python_version}}
 
       - name: Log in to Azure
-        uses: azure/login@v1
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -65,18 +65,18 @@ jobs:
             coverage xml --ignore-errors
 
       - name: Code Coverage Summary
-        uses: orgoro/coverage@v3
+        uses: orgoro/coverage@d77626a5fa35d39123e86d6c62907fabe2491496 # v3
         with:
           coverageFile: /home/runner/work/azureml-inference-server/azureml-inference-server/coverage.xml
           token: ${{ secrets.GITHUB_TOKEN }}
-        if: runner.os == 'Linux' && matrix.python_version == '3.10' && env.COVERAGE == 'true' # Temporarily disable, this will always evaluate to false
+        if: runner.os == 'Linux' && matrix.python_version == '3.11' && env.COVERAGE == 'true' # Temporarily disable, this will always evaluate to false
 
   # Run Lint check for the source code
   Flake8:
     runs-on: 'ubuntu-latest'
     steps:
       - name: Clone branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install flake8
         run: pip install flake8
@@ -89,7 +89,7 @@ jobs:
     runs-on: 'ubuntu-latest'
     steps:
       - name: Clone branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install black
         run: pip install black

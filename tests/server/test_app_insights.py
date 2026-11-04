@@ -1,93 +1,86 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-from datetime import timedelta
+import builtins
 import json
-import os
-import time
+import logging
 from unittest.mock import Mock
 import uuid
 
-from azure.identity import DefaultAzureCredential
-from azure.monitor.query import LogsQueryClient, LogsQueryStatus
+from azure.monitor.opentelemetry.exporter import AzureMonitorLogExporter
 import flask
+from opentelemetry._logs import get_logger_provider
+from opentelemetry.sdk._logs.export import LogRecordExportResult
 from opentelemetry.trace import NonRecordingSpan, SpanContext, TraceFlags
-import pandas as pd
-import pytest
+from pydantic import SecretStr
 
 from azureml_inference_server_http.api.aml_response import AMLResponse
+from azureml_inference_server_http.print_log_hook import print_to_logger
 
-AML_LOG_ANALYTICS_WORKSPACE_ID = os.environ.get("AML_LOG_ANALYTICS_WORKSPACE_ID", None)
 
+def test_appinsights_log_handler(config, monkeypatch):
+    from azureml_inference_server_http.server import appinsights_client
+    from opentelemetry.instrumentation.logging.handler import LoggingHandler
 
-@pytest.mark.online
-def test_appinsights_e2e(config, app):
-    if not AML_LOG_ANALYTICS_WORKSPACE_ID:
-        raise EnvironmentError(
-            (
-                "AML Workspace ID not found. Please set the log analytics "
-                "workspace using the `AML_LOG_ANALYTICS_WORKSPACE_ID` environment "
-                "variable and try again."
-            )
+    config.app_insights_enabled = False
+    client = appinsights_client.AppInsightsClient()
+    provider = Mock()
+    monkeypatch.setattr(appinsights_client, "LoggerProvider", Mock(return_value=provider))
+    monkeypatch.setattr(appinsights_client, "set_logger_provider", Mock())
+    monkeypatch.setattr(appinsights_client, "get_logger_provider", Mock(return_value=provider))
+    monkeypatch.setattr(appinsights_client, "AzureMonitorLogExporter", Mock())
+    monkeypatch.setattr(appinsights_client, "BatchLogRecordProcessor", Mock())
+    root_handlers = list(logging.getLogger().handlers)
+
+    try:
+        client.init_otel_log("unused", None)
+        assert isinstance(client.azureLogHandler, LoggingHandler)
+        assert client.azureLogHandler in appinsights_client.logger.handlers
+        assert client.azureLogHandler in logging.getLogger("azmlinfsrv.print").handlers
+        assert logging.getLogger().handlers == root_handlers
+
+        record = logging.LogRecord(
+            "azmlinfsrv.print", logging.INFO, __file__, 1, "test message", (), None, "print_to_logger"
         )
+        record.custom_dimensions = {"Request Id": "test-request"}
+        client.azureLogHandler.emit(record)
 
-    if not config.app_insights_key:
-        raise EnvironmentError(
-            (
-                "AML App Insights key not found. Please set the App Insights key "
-                "using the `AML_APP_INSIGHTS_KEY` environment variable and try "
-                "again."
-            )
-        )
+        emitted_record = provider.get_logger.return_value.emit.call_args.args[0]
+        assert emitted_record.body == "test message"
+        assert emitted_record.attributes["code.function.name"] == "print_to_logger"
+        assert emitted_record.attributes["custom_dimensions"] == {"Request Id": "test-request"}
+    finally:
+        client.close()
 
-    creds = DefaultAzureCredential()
-    log_client = LogsQueryClient(creds)
+    provider.force_flush.assert_called_once()
 
-    log_message = f"Testing App Insights at {time.time()}"
 
-    # Ensure app insights is enabled
+def test_appinsights_log_export(config, app, monkeypatch):
+    config.app_insights_enabled = False
+    config.app_insights_key = SecretStr(str(uuid.uuid4()))
+    log_message = f"Testing App Insights {uuid.uuid4()}"
+    exported_records = []
+
+    def mock_export(_exporter, batch, **_kwargs):
+        exported_records.extend(item.log_record for item in batch)
+        return LogRecordExportResult.SUCCESS
+
+    monkeypatch.setattr(AzureMonitorLogExporter, "export", mock_export)
+
     with app.appinsights_enabled():
-        # print is hooked to the logger
+        insights_client = app.azml_blueprint.appinsights_client
+        print_logger = logging.getLogger("azmlinfsrv.print")
+
+        assert insights_client.enabled, "App Insights client initialization failed"
+        assert builtins.print is print_to_logger, "The print logging hook is not installed"
+        assert print_logger.isEnabledFor(logging.INFO), "The print logger is filtering INFO records"
+        assert insights_client.azureLogHandler in print_logger.handlers, "The Azure logging handler is not attached"
+
         print(log_message)
-
-    # Search for the exact message within the print log hook module
-    query = f"""
-        AppTraces
-        | where tostring(Properties["code.function.name"]) == "print_to_logger"
-        | where Message == '{log_message}'
-    """
-
-    # Check every 10 seconds for up to 5 minutes if App Insights has received
-    # the log message
-    start_time = time.time()
-    while time.time() - start_time < 300:
-        time.sleep(10)
-        query_resp = log_client.query_workspace(
-            AML_LOG_ANALYTICS_WORKSPACE_ID,
-            query,
-            timespan=timedelta(minutes=5),
-        )
-
-        # Fail the test if the query fails
-        if query_resp.status != LogsQueryStatus.SUCCESS:
-            continue
-
-        table = query_resp.tables[0]
-        df = pd.DataFrame(data=table.rows, columns=table.columns)
-
-        # Should only have one message that matches. May have 0 if the message
-        # wasn't received yet.
-        if df.shape[0] != 1:
-            continue
-
-        # Verify (again) that the message is correct
-        assert df["Message"][0] == log_message
-
-        # If we've made it this far, we pass
-        return
-
-    # This can only be reached if we failed out of the 5 minute timeout
-    pytest.fail("Log message not found in App Insights logs within 5 minutes")
+        assert get_logger_provider().force_flush(timeout_millis=30_000), "Telemetry flush did not complete"
+        matching_records = [record for record in exported_records if record.body == log_message]
+        assert matching_records, "The target message never reached AzureMonitorLogExporter.export"
+        assert matching_records[0].attributes["code.function.name"] == "print_to_logger"
 
 
 def test_appinsights_exception(app_appinsights: flask.Flask):

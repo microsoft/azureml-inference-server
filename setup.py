@@ -6,7 +6,6 @@ import re
 
 import setuptools
 
-
 PACKAGE_NAME = "azureml-inference-server-http"
 PACKAGE_DIR = PACKAGE_NAME.replace("-", "_")
 VERSION_FILENAME = "_version.py"
@@ -51,8 +50,6 @@ setuptools.setup(
     classifiers=[
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Intended Audience :: Developers",
@@ -62,14 +59,15 @@ setuptools.setup(
         "Operating System :: MacOS",
         "Operating System :: POSIX :: Linux",
     ],
-    python_requires=">=3.9",
+    python_requires=">=3.11",
     install_requires=[
         "flask~=3.1.0",
         "flask-cors~=6.0.0",
         'gunicorn>=23.0.0; platform_system!="Windows"',
         "inference-schema~=1.8.0",
-        "opentelemetry-sdk==1.33.0",
-        "opentelemetry-api==1.33.0",
+        "opentelemetry-sdk>=1.45.1,<2.0.0",
+        "opentelemetry-api>=1.45.1,<2.0.0",
+        "opentelemetry-instrumentation-logging>=0.65b0",
         "opentelemetry-semantic-conventions",
         "azure-monitor-opentelemetry-exporter",
         'psutil<6.0.0; platform_system=="Windows"',
