@@ -68,14 +68,14 @@ setuptools.setup(
         "opentelemetry-sdk>=1.45.1,<2.0.0",
         "opentelemetry-api>=1.45.1,<2.0.0",
         "opentelemetry-instrumentation-logging>=0.65b0",
-        "opentelemetry-semantic-conventions",
-        "azure-monitor-opentelemetry-exporter",
+        "opentelemetry-semantic-conventions>=0.65b0",
+        "azure-monitor-opentelemetry-exporter>=1.0.0b58,<2.0.0",
         'psutil<6.0.0; platform_system=="Windows"',
         "pydantic~=2.12.0",
         "pydantic-settings",
         'waitress>=3.0.1; platform_system=="Windows"',
         "werkzeug>=3.0.3",  # Werkzeug 3.x breaks back-compatibility of urls package
-        "certifi>=2024.7.4",  # Python (Pip) Security Update for certifi (GHSA-248v-346w-9cwc)
+        "certifi>=2026.10.18",  # Python (Pip) Security Update for certifi (GHSA-6q48-6c7w-9gw2)
     ],
     extras_require={
         "dev": [
