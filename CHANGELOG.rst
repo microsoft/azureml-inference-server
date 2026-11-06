@@ -1,3 +1,17 @@
+1.6.1 (2026-11-06)
+~~~~~~~~~~~~~~~~~~
+
+Enhancements
+------------
+
+- Raised the minimum certifi version to 2026.10.18 and the minimum OpenTelemetry semantic conventions version to 0.65b0.
+
+Fixes
+-----
+
+- Require Azure Monitor OpenTelemetry exporter >=1.0.0b58,<2.0.0 to prevent startup failures caused by older exporters importing the removed OpenTelemetry LogData API.
+- Updated Towncrier to 26.9.0 to remove its dependency on the deprecated pkg_resources API. Release drafts read the source version directly and render a single release heading.
+
 1.6.0 (2026-11-03)
 ~~~~~~~~~~~~~~~~~~
 
