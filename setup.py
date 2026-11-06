@@ -95,7 +95,7 @@ setuptools.setup(
             "pytest-benchmark",
             "pytest-cov",
             "requests",
-            "towncrier==21.9.0",
+            "towncrier==26.9.0",
             "wheel",
         ]
     },
