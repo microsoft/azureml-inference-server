@@ -40,7 +40,7 @@ def get_license():
 setuptools.setup(
     name=PACKAGE_NAME,
     version=get_version(),
-    license=get_license(),
+    license="MIT",
     author="Microsoft Corp",
     author_email="amlInferenceImages@microsoft.com",
     description="Azure Machine Learning inferencing server.",
@@ -54,7 +54,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3.12",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
-        "License :: Other/Proprietary License",
+        "License :: OSI Approved :: MIT License",
         "Operating System :: Microsoft :: Windows",
         "Operating System :: MacOS",
         "Operating System :: POSIX :: Linux",
